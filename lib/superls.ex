@@ -1,49 +1,8 @@
 defmodule Superls do
-  @moduledoc ~S"""
-  A locally filenames parser and search engine CLI.
-
-  ## Parsing
-  `Superls` scans all filenames of a volume, extracts the tags from the filenames along other file attributes like size and builds an index for this volume.
-
-  Volumes indexes are grouped, unless specified, in the `default` store.
-
-  Stores are saved compressed in the user cache environment.
-
-  The following command creates an index of /path/to/my/files in the `default` store :
-
-  ```bash
-  superls archive /path/to/my/files
-  ```
-
-  ## Search
-
-  The command to search tags in the default store with the CLI is :
-
-  ```bash
-  superls search 
-  ```
-  `search` is a command line interpreter where tags can be typed even incomplete and a list of matched files is displayed.
-
-  ## Other CLI commands
-  Typing the following command will display help and stores information for `Superls` :
-
-  ```bash
-  superls 
-  ```
-
-
-  ## What is parsed ?
-
-  `Superls` tokenizes filenames with the following delimiters :
-  ```elixir
-  ",", " ", "_", "-", ".", "*", "/", "(", ")", ":", "\t", "\n"
-  ```
-      
-  Each collected file is grouped with its tags and its file attributes,
-  see `ListerFile{}`struct for more details about file attributes.
-
-  Tags and file attributes constitute the index keys.
-  """
+  @moduledoc "README.md"
+             |> File.read!()
+             |> String.split("<!-- MDOC !-->")
+             |> Enum.fetch!(1)
 
   @doc false
   def load_keys(file) do
@@ -78,6 +37,7 @@ defmodule Superls do
     "#{size} B."
   end
 
+  @doc false
   def build_indexed_list(list, len),
     do: do_build_indexed_list(list, {len, []})
 
