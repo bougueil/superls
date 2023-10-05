@@ -8,7 +8,7 @@ defmodule Superls.MixProject do
       version: @version,
       elixir: "~> 1.15-dev",
       package: package(),
-      description: "filenames tokenizer CLI",
+      description: "A files indexer and search engine elixir CLI.",
       start_permanent: Mix.env() == :prod,
       escript: [main_module: Superls.CLI],
       deps: deps(),
