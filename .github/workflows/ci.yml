@@ -4,7 +4,7 @@ on:
   pull_request:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   test:
@@ -48,6 +48,5 @@ jobs:
         if: ${{ matrix.lint }}
         
       - run: mix credo
-
 
       - run: mix test
