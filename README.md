@@ -1,6 +1,6 @@
 # superls
-[![Test](https://github.com/bougueil/superls/actions/workflows/ci.yml/badge.svg)](https://github.com/bougueil/superls/actions/workflows/ci.yml)
-A (locally) filenames parser and search engine CLI.
+[![CI](https://github.com/bougueil/superls/actions/workflows/ci.yml/badge.svg)](https://github.com/bougueil/superls/actions/workflows/ci.yml)
+A local filenames parser and search engine CLI.
 
 ## build
 ```
