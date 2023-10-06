@@ -6,7 +6,7 @@ defmodule Superls.Store do
   @sep_path "-"
 
   def archive(media_path, store_name, confirm? \\ false) do
-    if Prompt.prompt?("Do archive in #{store_name} ? [Y/n]", confirm?) do
+    if Prompt.prompt("Do archive in #{store_name} ? [Y/n]", confirm?) do
       confirm? && IO.write("updating #{store_name} ...")
 
       store_cache_path = maybe_create_dir(store_name, confirm?)
@@ -93,7 +93,7 @@ defmodule Superls.Store do
     do: store_path
 
   defp do_maybe_create_dir(false, store, store_path, confirm?) do
-    if Prompt.prompt?("Confirm create a new store #{store} [N/y] ?", confirm?) do
+    if Prompt.prompt("Confirm create a new store #{store} [N/y] ?", confirm?) do
       :ok = File.mkdir_p!(store_path)
     end
 

@@ -37,6 +37,19 @@ defmodule Superls do
     "#{size} B."
   end
 
+  # https://stackoverflow.com/questions/22576658/convert-elixir-string-to-integer-or-float
+  @spec string_to_numeric(binary()) :: float() | number() | nil
+  def string_to_numeric(val) when is_binary(val),
+    do: _string_to_numeric(Regex.replace(~r{[^\d\.]}, val, ""))
+
+  defp _string_to_numeric(val) when is_binary(val),
+    do: _string_to_numeric(Integer.parse(val), val)
+
+  defp _string_to_numeric(:error, _val), do: nil
+  defp _string_to_numeric({num, ""}, _val), do: num
+  defp _string_to_numeric({num, ".0"}, _val), do: num
+  defp _string_to_numeric({_num, _str}, val), do: elem(Float.parse(val), 0)
+
   @doc false
   def build_indexed_list(list, len),
     do: do_build_indexed_list(list, {len, []})

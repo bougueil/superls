@@ -2,7 +2,7 @@ defmodule Superls.Api do
   @moduledoc """
   `Superls` API for the CLI.
   """
-  alias Superls.{Store, Tag, MatchJaro, MatchSize}
+  alias Superls.{Store, Tag, MatchJaro, MatchSize, MatchDate}
 
   use Superls
 
@@ -62,5 +62,25 @@ defmodule Superls.Api do
   def search_similar_size(merged_index) do
     Tag.files_index_from_tags(merged_index)
     |> MatchSize.best_size()
+  end
+
+  def search_oldness(store_name_or_path, cmd, nentries) when is_binary(store_name_or_path) do
+    Store.get_indexes_from_resource(store_name_or_path)
+    |> search_oldness(cmd, nentries)
+  end
+
+  def search_oldness(merged_index, cmd, nentries) do
+    Tag.files_index_from_tags(merged_index)
+    |> MatchDate.search_oldness(cmd, nentries)
+  end
+
+  def search_bydate(store_name_or_path, cmd, date, ndays) when is_binary(store_name_or_path) do
+    Store.get_indexes_from_resource(store_name_or_path)
+    |> search_bydate(cmd, date, ndays)
+  end
+
+  def search_bydate(merged_index, cmd, date, ndays) do
+    Tag.files_index_from_tags(merged_index)
+    |> MatchDate.search_bydate(cmd, date, ndays)
   end
 end

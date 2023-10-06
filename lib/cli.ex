@@ -1,6 +1,6 @@
 defmodule Superls.CLI do
   @moduledoc false
-  alias Superls.{Api, Store, Tag, MatchJaro, MatchSize}
+  alias Superls.{Api, Store, SearchCLI}
 
   use Superls
 
@@ -60,72 +60,7 @@ defmodule Superls.CLI do
   defp search([store_name_or_path]) do
     store_name_or_path
     |> Store.get_indexes_from_resource()
-    |> human_search(store_name_or_path)
-  end
-
-  defp human_search(merged_index, store_name_or_path) do
-    IO.write("""
-      #{map_size(merged_index)} tags in '#{store_name_or_path}' - enter any string like `1967 twice`, q]uit or
-      s]ort_tags, `dt]upl_tags, ds]upl_size.
-    """)
-
-    user_tags = IO.gets("-? ") |> String.trim_trailing()
-
-    case user_tags do
-      "" ->
-        human_search(merged_index, store_name_or_path)
-
-      "q" ->
-        IO.puts("CLI exits.")
-
-      "s" ->
-        res = Tag.tag_freq(merged_index)
-
-        IO.puts(
-          "[{tag, {num_occur, from_same_host?}}, ..]\n#{inspect(res, pretty: true, limit: :infinity)}"
-        )
-
-        human_search(merged_index, store_name_or_path)
-
-      "dt" ->
-        merged_index
-        |> Api.search_duplicated_tags()
-        |> MatchJaro.pretty_print_result()
-
-        human_search(merged_index, store_name_or_path)
-
-      "ds" ->
-        merged_index
-        |> Api.search_similar_size()
-        |> MatchSize.pretty_print_result()
-
-        human_search(merged_index, store_name_or_path)
-
-      # USER entered tags e.g. `1916 world wars`
-      user_input ->
-        res =
-          Api.search_from_index(user_input, merged_index)
-          |> search_output_friendly()
-
-        IO.puts(
-          "CLI found \r#{length(res)} result(s) for \"#{String.trim(user_input, "\n")}\" ------------------"
-        )
-
-        human_search(merged_index, store_name_or_path)
-    end
-  end
-
-  defp search_output_friendly(search_res) do
-    for {file, vol} <- search_res do
-      (IO.ANSI.bright() <>
-         Path.basename(file.name) <>
-         IO.ANSI.reset() <>
-         "\t" <>
-         Superls.pp_sz(file.size) <>
-         "\t" <>
-         vol <> "/" <> Path.dirname(file.name) <> IO.ANSI.reset())
-      |> IO.puts()
-    end
+    |> SearchCLI.command_line(store_name_or_path)
   end
 
   defp help() do
