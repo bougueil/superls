@@ -3,7 +3,7 @@
 
 <!-- MDOC !-->
 
-A files indexer and search engine elixir CLI.
+A multi volumes files indexer and search engine elixir CLI.
 
 ### Indexing
   `Superls` scans all filenames of a volume, extracts the tags from the filenames along other file attributes like size and builds an index for this volume.
