@@ -88,7 +88,7 @@ defmodule Superls.SearchCLI do
     )
   end
 
-  defp command(merged_index, user_input) do
+  defp command(_merged_index, user_input) do
     IO.puts("Unrecognized command: \"#{user_input}\"")
   end
 
