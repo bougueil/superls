@@ -89,8 +89,6 @@ defmodule Superls.SearchCLI do
   end
 
   defp command(merged_index, user_input) do
-    res = Tag.tag_freq(merged_index)
-
     IO.puts("Unrecognized command: \"#{user_input}\"")
   end
 
