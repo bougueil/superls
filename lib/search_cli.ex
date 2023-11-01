@@ -78,7 +78,7 @@ defmodule Superls.SearchCLI do
     )
   end
 
-  defp command(merged_index, user_input) do
+  defp command(merged_index, user_input) when byte_size(user_input) > 1 do
     res =
       Api.search_from_index(user_input, merged_index)
       |> search_output_friendly()
@@ -88,84 +88,11 @@ defmodule Superls.SearchCLI do
     )
   end
 
-  # def command_line(merged_index, store_name_or_path) do
-  #   IO.write("""
-  #     #{map_size(merged_index)} tags in '#{store_name_or_path}' - enter any string like `1967 twice`, q]uit or
-  #     s]ort_tags, `dt]upl_tags, ds]upl_size, xo|xn|ro|rn]date_old, xd|rd]bydate.
-  #   """)
+  defp command(merged_index, user_input) do
+    res = Tag.tag_freq(merged_index)
 
-  #   user_tags = IO.gets("-? ") |> String.trim_trailing()
-
-  #   case user_tags do
-  #     "" ->
-  #       command_line(merged_index, store_name_or_path)
-
-  #     "q" ->
-  #       IO.puts("CLI exits.")
-
-  #     "s" ->
-  #       res = Tag.tag_freq(merged_index)
-
-  #       IO.puts(
-  #         "[{tag, {num_occur, from_same_host?}}, ..]\n#{inspect(res, pretty: true, limit: :infinity)}"
-  #       )
-
-  #       command_line(merged_index, store_name_or_path)
-
-  #     "dt" ->
-  #       merged_index
-  #       |> Api.search_duplicated_tags()
-  #       |> MatchJaro.pretty_print_result()
-
-  #       command_line(merged_index, store_name_or_path)
-
-  #     "ds" ->
-  #       merged_index
-  #       |> Api.search_similar_size()
-  #       |> MatchSize.pretty_print_result()
-
-  #       command_line(merged_index, store_name_or_path)
-
-  #     cmd when cmd in ~w(xo xn ro rn) ->
-  #       nentries =
-  #         Prompt.confirm_numeric_default(
-  #           "Confirm display first #{@num_files_search_oldness} entries (Y/new_value) ? ",
-  #           @num_files_search_oldness,
-  #           true
-  #         )
-
-  #       Api.search_oldness(merged_index, cmd, nentries)
-  #       command_line(merged_index, store_name_or_path)
-
-  #     cmd when cmd in ~w(xd rd) ->
-  #       today = Date.utc_today()
-
-  #       date =
-  #         Prompt.confirm_date_default("Enter a date like #{Date.to_string(today)}: ", today, true)
-
-  #       ndays =
-  #         Prompt.confirm_numeric_default(
-  #           "Confirm #{@num_days_search_bydate} days around the date (Y/new_value) ? ",
-  #           @num_days_search_bydate,
-  #           true
-  #         )
-
-  #       Api.search_bydate(merged_index, cmd, date, ndays)
-  #       command_line(merged_index, store_name_or_path)
-
-  #     # USER entered tags e.g. `1916 world wars`
-  #     user_input ->
-  #       res =
-  #         Api.search_from_index(user_input, merged_index)
-  #         |> search_output_friendly()
-
-  #       IO.puts(
-  #         "CLI found \r#{length(res)} result(s) for \"#{String.trim(user_input, "\n")}\" ------------------"
-  #       )
-
-  #       command_line(merged_index, store_name_or_path)
-  #   end
-  # end
+    IO.puts("Unrecognized command: \"#{user_input}\"")
+  end
 
   defp search_output_friendly(search_res) do
     for {file, vol} <- search_res do
