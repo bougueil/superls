@@ -44,3 +44,5 @@ jobs:
       - run: mix credo
 
       - run: mix test
+
+      - run: mix dialyzer --unmatched_returns
