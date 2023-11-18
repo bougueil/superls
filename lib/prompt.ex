@@ -13,9 +13,12 @@ defmodule Superls.Prompt do
 
   # prompt the `prompt` message and returns true or the entered value
   def prompt(prompt, confirm? \\ false),
-    do: (Code.loaded?(Mix) && Mix.env() == :test) || !confirm? || yes(IO.gets(prompt))
+    do: running_test?() || !confirm? || yes(IO.gets(prompt))
 
   # returns true or the entered value
   def yes(string) when is_binary(string),
     do: String.trim(string) in ["", "y", "Y", "yes", "YES", "Yes"] || string
+
+  defp running_test?(),
+    do: Code.loaded?(HelperTest)
 end

@@ -12,7 +12,7 @@ defmodule Superls.SearchCLI do
     """)
 
     cmd = IO.gets("-? ") |> String.trim_trailing()
-    command(merged_index, cmd)
+    _ = command(merged_index, cmd)
     command_line(merged_index, store_name_or_path)
   end
 

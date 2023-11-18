@@ -18,7 +18,7 @@ defmodule Superls.Store do
         |> :zlib.gzip()
 
       encoded_path = "#{store_cache_path}/#{encode_index_uri(media_path)}"
-      File.write(encoded_path, index)
+      :ok = File.write(encoded_path, index)
       confirm? && IO.write("\r#{store_name}  updated.\n")
       :ok
     else
