@@ -62,6 +62,9 @@ defmodule Superls.Store do
   def cache_path(),
     do: Application.fetch_env!(:superls, :stores_path)
 
+  def maybe_create_cache_path(),
+    do: maybe_create_dir("", false)
+
   def decode_index_uri(index_uri) when is_binary(index_uri) do
     String.split(index_uri, "-")
     |> hd()

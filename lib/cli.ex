@@ -6,6 +6,8 @@ defmodule Superls.CLI do
 
   # escript main entry point 
   def main(cmd) do
+    Store.maybe_create_cache_path()
+
     case cmd do
       [] ->
         help()
