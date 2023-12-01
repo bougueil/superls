@@ -60,9 +60,25 @@ defmodule Superls.CLI do
   defp search([]), do: search([default_store()])
 
   defp search([store_name_or_path]) do
-    store_name_or_path
-    |> Store.get_indexes_from_resource()
-    |> SearchCLI.command_line(store_name_or_path)
+    try do
+      store_name_or_path
+      |> Store.get_indexes_from_resource()
+      |> SearchCLI.command_line(store_name_or_path)
+    rescue
+      _e in File.Error ->
+        default = default_store()
+
+        store =
+          case store_name_or_path do
+            ^default -> ""
+            any -> any
+          end
+
+        IO.puts("""
+        ** store '#{store_name_or_path}' is missing.
+        first create it with: superls archive #{store} /path/to/my/files
+        """)
+    end
   end
 
   defp help() do
