@@ -1,5 +1,9 @@
 # Changelog for Superls
 
+## v1.0.0 (2024-01-12)
+
+ * Support password encrypted stores 
+
 ## v0.2.0 (2023-12-02)
 
  * Fix when stores are not present
