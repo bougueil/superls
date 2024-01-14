@@ -1,5 +1,5 @@
 defmodule Superls.Tag do
-  alias Superls.{ListerFile}
+  alias Superls.{ListerFile, MatchDate, MatchJaro, MatchSize}
 
   @moduledoc false
 
@@ -185,5 +185,25 @@ defmodule Superls.Tag do
       end)
       |> elem(1)
     end)
+  end
+
+  def search_duplicated_tags(merged_index) do
+    files_index_from_tags(merged_index)
+    |> MatchJaro.best_jaro()
+  end
+
+  def search_similar_size(merged_index) do
+    files_index_from_tags(merged_index)
+    |> MatchSize.best_size()
+  end
+
+  def search_oldness(merged_index, cmd, nentries) do
+    files_index_from_tags(merged_index)
+    |> MatchDate.search_oldness(cmd, nentries)
+  end
+
+  def search_bydate(merged_index, cmd, date, ndays) do
+    files_index_from_tags(merged_index)
+    |> MatchDate.search_bydate(cmd, date, ndays)
   end
 end

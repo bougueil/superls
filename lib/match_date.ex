@@ -1,6 +1,7 @@
 defmodule Superls.MatchDate do
   @day_seconds 3600 * 24
   @moduledoc false
+  use Superls
   # list oldest / newest files according to mtime / atime
 
   @doc ~S"""
@@ -83,10 +84,4 @@ defmodule Superls.MatchDate do
     |> DateTime.to_date()
     |> Date.to_string()
   end
-
-  # defp date_human_str(posix_time),
-  #   do: posix_time |> DateTime.from_unix!() |> DateTime.to_date() |> Date.to_string()
-
-  defp datetime_human_str(posix_time),
-    do: posix_time |> DateTime.from_unix!() |> DateTime.to_string()
 end

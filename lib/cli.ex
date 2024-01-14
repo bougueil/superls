@@ -1,114 +1,93 @@
 defmodule Superls.CLI do
   @moduledoc false
-  alias Superls.{Api, Store, SearchCLI}
+  alias Superls.{Api, SearchCLI, Store}
 
   use Superls
 
-  # escript main entry point 
-  def main(cmd) do
-    _ = Store.maybe_create_cache_path()
+  @options [
+    store: :string,
+    password: :boolean
+  ]
 
-    case cmd do
-      [] ->
-        help()
+  def main(argv) do
+    _ = Superls.maybe_create_cache_path()
 
-      ["help" | _args] ->
-        help()
-
-      ["list_indexes" | args] ->
-        list_indexes(args)
-
-      ["inspect" | args] ->
-        my_inspect(args)
-
-      ["search" | args] ->
-        search(args)
-
-      ["archive", media_path | args] ->
-        archive(media_path, args)
-
-      _ ->
-        IO.puts("wrong command: #{Enum.map_join(cmd, " ", & &1)}")
-        help()
+    with {opts, args, []} <-
+           OptionParser.parse(argv, aliases: [p: :password, s: :store], strict: @options),
+         is_password? <- Keyword.get(opts, :password, false),
+         password <- is_password? && io_get_passwd(),
+         store <- Keyword.get(opts, :store, default_store()) do
+      main_args(args, store, password)
+    else
+      {_, _, wrong} ->
+        IO.puts("invalid command, check #{inspect(wrong)}")
     end
+  catch
+    err -> IO.puts(err)
   end
 
-  defp my_inspect([]), do: my_inspect([default_store()])
+  defp io_get_passwd,
+    do: Password.get(" enter password: ")
 
-  defp my_inspect([store_name]) do
-    info = Api.inspect_store(store_name)
-
-    IO.puts(
-      "tags: #{info.num_tags},\nfiles:  #{info.num_files},\n100 most frequent tags : #{inspect(info.most_frequent_100, pretty: true)}"
-    )
+  defp main_args(["archive", media_path], store_name, password) do
+    Api.archive(media_path, store_name, _confirm? = true, password)
   end
 
-  defp list_indexes([]), do: list_indexes([default_store()])
+  defp main_args(["search"], store_name_or_path, password) do
+    store_name_or_path
+    |> Store.Reader.get_merged_index_from_store(password)
+    |> SearchCLI.command_line(store_name_or_path)
+  rescue
+    _e in File.Error ->
+      default = default_store()
 
-  defp list_indexes([store_name]) do
-    Api.list_indexes(store_name)
-    |> pp_indexes()
-    |> IO.puts()
+      store =
+        case store_name_or_path do
+          ^default -> ""
+          any -> any
+        end
+
+      IO.puts("""
+      ** store `#{store_name_or_path}` is missing.
+      first create it with: superls archive /path/to/myfiles -s #{store} [- p]
+      """)
   end
 
-  defp archive(media_path, []),
-    do: archive(media_path, [default_store()])
-
-  defp archive(media_path, [store_name]),
-    do: Api.archive(media_path, store_name, _confirm? = true)
-
-  defp search([]), do: search([default_store()])
-
-  defp search([store_name_or_path]) do
-    try do
-      store_name_or_path
-      |> Store.get_indexes_from_resource()
-      |> SearchCLI.command_line(store_name_or_path)
-    rescue
-      _e in File.Error ->
-        default = default_store()
-
-        store =
-          case store_name_or_path do
-            ^default -> ""
-            any -> any
-          end
-
-        IO.puts("""
-        ** store '#{store_name_or_path}' is missing.
-        first create it with: superls archive #{store} /path/to/my/files
-        """)
-    end
-  end
-
-  defp help() do
-    path = Store.cache_path()
-    indexes = Enum.map(Store.list_stores(), &{&1, Api.list_indexes(&1)})
-    # dbg(indexes)
+  defp main_args(["inspect"], store_name, passwd) do
+    info = Api.inspect_store(store_name, passwd)
+    vols = Store.Reader.volume_path_from_digests(store_name, passwd) |> Enum.intersperse(", ")
 
     IO.puts("""
-    Usage: superls command {params}
-    Available commands are:
-      archive:\n\t  superls archive /path/to/my/files\n\t  (bad links prevent archiving can be detected with: find . -type l -ls)
-      search:\n\t  superls search [store | path]
-      list_indexes:\n\t  superls list_indexes [store]
-      inspect:\n\t  superls inspect [store]
-    Cache information:
-      cache_path: #{path}
-      stores: #{Enum.intersperse(Store.list_stores(), ", ")}
-      media volumes by store:\n#{expand_stores(indexes)}
+    tags: #{info.num_tags},\nfiles: #{info.num_files},
+    100 most frequent tags: #{inspect(info.most_frequent_100, limit: :infinity, pretty: true)}
+    volumes: #{vols}
     """)
   end
 
-  defp pp_indexes(indexes),
-    do:
-      Enum.map_join(indexes, "\n", fn {{index, last_updated, size}, path} ->
-        "\t  #{last_updated} #{path} (#{Superls.pp_sz(size)}) #{index}"
-      end)
+  defp main_args(["help"], _store, _passwd) do
+    path = Store.Reader.cache_path()
 
-  defp expand_stores(indexes),
-    do:
-      Enum.map_join(indexes, "\n", fn {store, indexes} ->
-        "\t  #{store}:\n#{pp_indexes(indexes)}"
-      end)
+    IO.puts("""
+    Usage: superls command [params] [-p -s my_store]
+      -p to password protect the store, the default store is `default`
+    Available commands are:
+      archive:\n\t  superls archive /path/to/my/files\n\t  note: links prevent archiving `find /path/to/my/files -type l -ls`
+      search:\n\t  superls search
+      inspect:\n\t  superls inspect
+    Stores:
+      #{Enum.intersperse(Store.Reader.list_stores(), ", ")}
+    Cache information:
+      cache_path: #{path}
+    """)
+  end
+
+  defp main_args([], store_name, passwd),
+    do: main_args(["help"], store_name, passwd)
+
+  defp main_args(cmd, _store, _passwd) do
+    throw(
+      "** unknown command `#{Enum.intersperse(cmd, " ")}`\n" <>
+        "type: `superls help` for available commands"
+    )
+  end
 end

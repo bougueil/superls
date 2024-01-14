@@ -1,6 +1,6 @@
 defmodule Superls.SearchCLI do
   @moduledoc false
-  alias Superls.{Api, Tag, Prompt, MatchJaro, MatchSize}
+  alias Superls.{MatchJaro, MatchSize, Prompt, Tag}
 
   @num_files_search_oldness Application.compile_env!(:superls, :num_files_search_oldness)
   @num_days_search_bydate Application.compile_env!(:superls, :num_days_search_bydate)
@@ -43,7 +43,7 @@ defmodule Superls.SearchCLI do
         true
       )
 
-    Api.search_bydate(merged_index, cmd, date, ndays)
+    Tag.search_bydate(merged_index, cmd, date, ndays)
   end
 
   defp command(merged_index, cmd) when cmd in ~w(xo xn ro rn) do
@@ -55,18 +55,22 @@ defmodule Superls.SearchCLI do
         true
       )
 
-    Api.search_oldness(merged_index, cmd, nentries)
+    Tag.search_oldness(merged_index, cmd, nentries)
   end
 
   defp command(merged_index, "ds") do
+    IO.write("this may take a while ..\r")
+
     merged_index
-    |> Api.search_similar_size()
+    |> Tag.search_similar_size()
     |> MatchSize.pretty_print_result()
   end
 
   defp command(merged_index, "dt") do
+    IO.write("this may take a while ..\r")
+
     merged_index
-    |> Api.search_duplicated_tags()
+    |> Tag.search_duplicated_tags()
     |> MatchJaro.pretty_print_result()
   end
 
@@ -80,7 +84,7 @@ defmodule Superls.SearchCLI do
 
   defp command(merged_index, user_input) when byte_size(user_input) > 1 do
     res =
-      Api.search_from_index(user_input, merged_index)
+      Tag.search_matching_tags(merged_index, user_input)
       |> search_output_friendly()
 
     IO.puts(

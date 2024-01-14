@@ -2,7 +2,7 @@ defmodule Superls.MatchJaro do
   use Superls
 
   @moduledoc false
-  # group files by similar tags 
+  # group files by similar tags
 
   @jaro_threshold Application.compile_env!(:superls, :jaro_threshold)
   def pretty_print_result(result) do

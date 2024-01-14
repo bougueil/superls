@@ -29,10 +29,11 @@ defmodule Superls.MixProject do
   defp deps do
     [
       {:flow, "~> 1.2.4"},
-      {:benchee, "~> 1.1", only: :test, runtime: false},
+      {:plug_crypto, "~> 2.0"},
+      {:benchee, "~> 1.3", only: :test, runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
-      {:ex_doc, "~> 0.30", only: :docs}
+      {:ex_doc, "~> 0.31", only: :docs}
     ]
   end
 

@@ -19,6 +19,6 @@ defmodule Superls.Prompt do
   def yes(string) when is_binary(string),
     do: String.trim(string) in ["", "y", "Y", "yes", "YES", "Yes"] || string
 
-  defp running_test?(),
+  defp running_test?,
     do: Code.loaded?(HelperTest)
 end

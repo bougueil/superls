@@ -2,7 +2,7 @@ defmodule Superls.MatchSize do
   use Superls
 
   @moduledoc false
-  # group files by size 
+  # group files by size
 
   # @size_threshold is the size difference percentage threshold
   @size_threshold Application.compile_env!(:superls, :size_threshold) / 100

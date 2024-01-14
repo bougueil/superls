@@ -1,12 +1,14 @@
 ExUnit.start()
 
-alias Superls.{Api}
+alias Superls.Api
 
 defmodule HelperTest do
   @root_dir Application.compile_env!(:superls, :stores_path) |> Path.dirname()
+  use Superls
 
-  def create_indexes(volumes, store_name) do
-    for {_, media_path} <- volumes, do: Api.archive(media_path, store_name)
+  def create_indexes(volumes, password \\ false) do
+    for {_, media_path} <- volumes,
+        do: Api.archive(media_path, default_store(), _confirm = false, password)
   end
 
   def create_file(vol_path, fname, opts \\ []) do
@@ -18,6 +20,6 @@ defmodule HelperTest do
     |> File.write!(content)
   end
 
-  def empty_store(),
+  def empty_store,
     do: File.rm_rf(@root_dir)
 end

@@ -6,26 +6,31 @@
 A multi volumes files indexer and search engine elixir CLI (Linux).
 
 ### Indexing
-  `Superls` scans all filenames of a volume, extracts the tags from the filenames along other file attributes like size and builds an index for this volume.
+  `superls` analyzes the filenames of a volume, extracts the filename tags and other file attributes such as size, and builds an index for the volume.
 
-  Volumes indexes are grouped, unless specified, in the `default` store.
+  Unless a store name is given (-s), volume indexes are grouped together in the `default` store.
 
-  Stores are saved compressed in the user cache environment.
+  Stores are saved compressed and optionally password encrypted.
 
   The following command creates an index of /path/to/my/files in the `default` store :
 
 ```bash
 superls archive /path/to/my/files
 ```
+or on store `mystore` with password encryption :
+
+```bash
+superls archive /path/to/my/files -s mystore -p
+```
 
 ### Search
 
-The command to search tags in the default store with the CLI is :
+The command to search tags in the `default` store with the CLI is :
 
 ```bash
 superls search
 ```
-Tags are entered separated by space, tags can be incomplete.
+An interactive shell asks for commands like query by a list of tags separated by space, a tag can be incomplete.<br>
 The result is a list of matched files.
 
 ### Other CLI commands
@@ -38,15 +43,21 @@ superls
 
 ### What is parsed ?
 
-`Superls` tokenizes filenames with the following delimiters :
+`superls` tokenizes filenames with the following delimiters :
 ```elixir
   ",", " ", "_", "-", ".", "*", "/", "(", ")", ":", "\t", "\n"
 ```
 
-Each collected file is grouped with its tags and its file attributes,
-see `ListerFile{}`struct for more details about file attributes.
+Collected tags are grouped with some files attributes like the file size.<br>
+See `ListerFile{}`struct for more details about collected data.
 
-Tags and file attributes constitute the index entry.
+Tags and file attributes constitute the index entry for the file.
+
+### Discarding files and tags from indexing
+
+Files with an extension present in `banned_file_ext` are not indexed.
+
+Tags present in `banned_tags` are not indexed.
 
 ### Advanced search
 #### jaro search

@@ -4,6 +4,7 @@ defmodule Superls do
              |> String.split("<!-- MDOC !-->")
              |> Enum.fetch!(1)
 
+  alias Superls.Prompt
   @doc false
   def load_keys(file) do
     Stream.resource(
@@ -18,6 +19,52 @@ defmodule Superls do
     )
     |> Enum.to_list()
     |> Map.from_keys(nil)
+  end
+
+  def halt(msg) do
+    throw(msg)
+  end
+
+  def cache_path,
+    do: Application.fetch_env!(:superls, :stores_path)
+
+  def encrypt(index, false),
+    do: index
+
+  def encrypt(index, password) do
+    Application.get_env(:superls, :secret_key_base)
+    |> Plug.Crypto.encrypt(password, index, max_age: :infinity)
+  end
+
+  def decrypt(index, false),
+    do: {:ok, index}
+
+  def decrypt(index, password) do
+    secret_key_base = Application.get_env(:superls, :secret_key_base)
+
+    Plug.Crypto.decrypt(secret_key_base, password, index)
+  end
+
+  def cache_store_path(store),
+    do: Path.expand("#{store}", cache_path())
+
+  def maybe_create_cache_path,
+    do: maybe_create_dir("", false)
+
+  def maybe_create_dir(store, confirm?) do
+    store_path = cache_store_path(store)
+    do_maybe_create_dir(File.exists?(store_path), store, store_path, confirm?)
+  end
+
+  defp do_maybe_create_dir(true, _store, store_path, _confirm?),
+    do: store_path
+
+  defp do_maybe_create_dir(false, store, store_path, confirm?) do
+    if Prompt.prompt("Confirm create a new store `#{store}` [N/y] ?", confirm?) do
+      :ok = File.mkdir_p!(store_path)
+    end
+
+    store_path
   end
 
   @doc false
@@ -62,7 +109,7 @@ defmodule Superls do
   defmacro __using__(_) do
     quote do
       @default_store Application.compile_env!(:superls, :default_store_name)
-      defp default_store(), do: @default_store
+      defp default_store, do: @default_store
 
       defp date_human_str(posix_time),
         do: posix_time |> DateTime.from_unix!() |> DateTime.to_date() |> Date.to_string()
