@@ -1,4 +1,7 @@
 # Changelog for Superls
+## v1.1.0  (2024-01-15)
+
+ * Customize the build with a custom secret key
 
 ## v1.0.0 (2024-01-12)
 
