@@ -55,9 +55,9 @@ Tags and file attributes constitute the index entry for the file.
 
 ### Discarding files and tags from indexing
 
-Files with an extension present in `banned_file_ext` are not indexed.
+Files with an extension present in `./priv/banned_file_ext` are not indexed.
 
-Tags present in `banned_tags` are not indexed.
+Tags present in `./priv/banned_tags` are not indexed.
 
 ### Advanced search
 #### jaro search
@@ -66,9 +66,14 @@ Tags present in `banned_tags` are not indexed.
 <!-- MDOC !-->
 
 ## build
+sls is built with a secret key that can be customized with the `SLS_SECRET` environment variable.
 ```
 mix deps.get
 mix do escript.build + escript.install
+
+or with a custom secret key:
+mix deps.get
+SLS_SECRET="myBuiltSecret" mix do escript.build + escript.install
 ```
 
 ## run
