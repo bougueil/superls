@@ -35,7 +35,7 @@ defmodule Superls.CLI do
 
   defp main_args(["search"], store_name_or_path, password) do
     store_name_or_path
-    |> Store.Reader.get_merged_index_from_store(password)
+    |> get_merged_index_from_store(password)
     |> SearchCLI.command_line(store_name_or_path)
   rescue
     _e in File.Error ->
@@ -89,5 +89,12 @@ defmodule Superls.CLI do
       "** unknown command `#{Enum.intersperse(cmd, " ")}`\n" <>
         "type: `superls help` for available commands"
     )
+  end
+
+  defp get_merged_index_from_store(store_name_or_path, password) do
+    Store.Reader.get_merged_index_from_store(store_name_or_path, password)
+  rescue
+    _e in ArgumentError ->
+      Store.Reader.get_merged_index_from_store(store_name_or_path, io_get_passwd())
   end
 end

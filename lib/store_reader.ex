@@ -108,7 +108,7 @@ defmodule Superls.Store.Reader do
       vol_path
     else
       _error ->
-        throw("** can't read #{digest},\ncheck -p flag")
+        raise(ArgumentError, "invalid_password")
     end
   end
 
