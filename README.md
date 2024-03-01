@@ -17,7 +17,7 @@ A multi volumes files indexer and search engine elixir CLI (Linux).
 ```bash
 superls archive /path/to/my/files
 ```
-or on store `mystore` with password encryption :
+or on store `mystore` with stdin password encryption :
 
 ```bash
 superls archive /path/to/my/files -s mystore -p
