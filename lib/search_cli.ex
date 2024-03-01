@@ -59,7 +59,7 @@ defmodule Superls.SearchCLI do
   end
 
   defp command(merged_index, "ds") do
-    IO.write("this may take a while ..\r")
+    IO.write("searching by similar file size, this may take a while ...\r")
 
     merged_index
     |> Tag.search_similar_size()
@@ -67,7 +67,7 @@ defmodule Superls.SearchCLI do
   end
 
   defp command(merged_index, "dt") do
-    IO.write("this may take a while ..\r")
+    IO.write("searching by similar tags, this may take a while ...\r")
 
     merged_index
     |> Tag.search_duplicated_tags()
