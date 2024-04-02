@@ -1,4 +1,7 @@
 # Changelog for Superls
+## v1.1.1  (2024-04-02)
+ * fix prompt new_value
+
 ## v1.1.0  (2024-01-15)
 
  * Customize the build with a custom secret key
