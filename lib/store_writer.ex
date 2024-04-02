@@ -19,16 +19,20 @@ defmodule Superls.Store.Writer do
         |> :zlib.gzip()
         |> Superls.encrypt(passwd)
 
-      :ok = Store.Reader.clean_old_digests(media_path, store_name, passwd)
+      try do
+        Store.Reader.clean_old_digests(media_path, store_name, passwd)
 
-      encoded_path =
-        "#{store_cache_path}/#{Superls.encrypt(encode_digest_uri(media_path), passwd)}"
+        encoded_path =
+          "#{store_cache_path}/#{Superls.encrypt(encode_digest_uri(media_path), passwd)}"
 
-      :ok = File.write(encoded_path, digest)
-      confirm? && IO.puts("\rstore `#{store_name}` updated.")
-      :ok
+        :ok = File.write(encoded_path, digest)
+        confirm? && IO.puts("\rstore `#{store_name}` updated.")
+      rescue
+        ArgumentError ->
+          Superls.halt("** invalid password for store #{store_name}.")
+      end
     else
-      :aborted
+      Superls.halt("Aborting.")
     end
   end
 

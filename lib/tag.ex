@@ -39,8 +39,8 @@ defmodule Superls.Tag do
           &{&1, %ListerFile{name: fp, size: stat.size, mtime: stat.mtime, atime: stat.atime}}
         )
       rescue
-        err in File.Error ->
-          IO.puts("error reading #{path}/#{fp}: #{inspect(err)} ... skip it.")
+        err ->
+          IO.puts(:stderr, "error reading #{path}/#{fp}: #{inspect(err)} ... skip it.")
           []
       end
     end
@@ -66,8 +66,8 @@ defmodule Superls.Tag do
   @doc """
   From the `merged_indexes` returns a map of files with their tags.
   """
-  def files_index_from_tags(merged_indexes) do
-    merged_indexes
+  def files_index_from_tags(merged_index) when is_map(merged_index) do
+    merged_index
     |> Flow.from_enumerable()
     |> Flow.flat_map(fn {_tag, files} -> files end)
     |> Flow.partition()
