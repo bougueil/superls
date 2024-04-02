@@ -28,7 +28,7 @@ defmodule Superls.SearchCLI do
     today = Date.utc_today()
 
     date =
-      Prompt.confirm_input_default(
+      Prompt.prompt_new_value(
         "Enter a date like #{Date.to_string(today)}: ",
         today,
         &Date.from_iso8601!/1,
@@ -36,7 +36,7 @@ defmodule Superls.SearchCLI do
       )
 
     ndays =
-      Prompt.confirm_input_default(
+      Prompt.prompt_new_value(
         "Confirm #{@num_days_search_bydate} days around the date (Y/new_value) ? ",
         @num_days_search_bydate,
         &Superls.string_to_numeric/1,
@@ -48,7 +48,7 @@ defmodule Superls.SearchCLI do
 
   defp command(merged_index, cmd) when cmd in ~w(xo xn ro rn) do
     nentries =
-      Prompt.confirm_input_default(
+      Prompt.prompt_new_value(
         "Confirm display first #{@num_files_search_oldness} entries (Y/new_value) ? ",
         @num_files_search_oldness,
         &Superls.string_to_numeric/1,

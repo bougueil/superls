@@ -3,14 +3,14 @@ defmodule Superls.Store.Writer do
   use Superls
   @moduledoc false
   @sep_path "-"
-  def archive(media_path, store_name, passwd, confirm? \\ false) do
-    if Prompt.prompt("Do archive in store `#{store_name}` ? [Y/n]", confirm?) do
-      confirm? && IO.write("updating store `#{store_name}` ...")
+  def archive(media_path, store_name, passwd, prompted? \\ false) do
+    if Prompt.prompt("Do archive in store `#{store_name}` ? [Y/n]", prompted?) do
+      prompted? && IO.write("updating store `#{store_name}` ...")
 
       !File.dir?(media_path) &&
         Superls.halt("error: media_path: #{media_path} must point to a directory")
 
-      store_cache_path = Superls.maybe_create_dir(store_name, confirm?)
+      store_cache_path = Superls.maybe_create_dir(store_name, prompted?)
       media_path = String.trim_trailing(media_path, "/")
 
       digest =
@@ -19,16 +19,21 @@ defmodule Superls.Store.Writer do
         |> :zlib.gzip()
         |> Superls.encrypt(passwd)
 
-      :ok = Store.Reader.clean_old_digests(media_path, store_name, passwd)
+      try do
+        Store.Reader.clean_old_digests(media_path, store_name, passwd)
 
-      encoded_path =
-        "#{store_cache_path}/#{Superls.encrypt(encode_digest_uri(media_path), passwd)}"
+        encoded_path =
+          "#{store_cache_path}/#{Superls.encrypt(encode_digest_uri(media_path), passwd)}"
 
-      :ok = File.write(encoded_path, digest)
-      confirm? && IO.puts("\rstore `#{store_name}` updated.")
-      :ok
+        :ok = File.write(encoded_path, digest)
+        prompted? && IO.puts("\rstore `#{store_name}` updated.")
+        :ok
+      rescue
+        ArgumentError ->
+          Superls.halt("** invalid password for store #{store_name}.")
+      end
     else
-      :aborted
+      Superls.halt("Aborting.")
     end
   end
 
