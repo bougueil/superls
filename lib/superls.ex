@@ -5,6 +5,10 @@ defmodule Superls do
              |> Enum.fetch!(1)
 
   alias Superls.Prompt
+
+  @secret System.get_env("SLS_SECRET") ||
+            "bqpBY/700YM3ns8e6fSAUtA4fx3/I+w/Xeoma6kn9xCS9XZc6KzWx54yl7XLHMIf"
+
   @doc false
   def load_keys(file) do
     Stream.resource(
@@ -32,7 +36,7 @@ defmodule Superls do
     do: index
 
   def encrypt(index, password) do
-    Application.get_env(:superls, :secret_key_base)
+    @secret
     |> Plug.Crypto.encrypt(password, index, max_age: :infinity)
   end
 
@@ -40,9 +44,8 @@ defmodule Superls do
     do: {:ok, index}
 
   def decrypt(index, password) do
-    secret_key_base = Application.get_env(:superls, :secret_key_base)
-
-    Plug.Crypto.decrypt(secret_key_base, password, index)
+    @secret
+    |> Plug.Crypto.decrypt(password, index)
   end
 
   def cache_store_path(store),
