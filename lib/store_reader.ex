@@ -1,7 +1,14 @@
 defmodule Superls.Store.Reader do
-  alias Superls.Tag
+  alias Superls.{Tag, Password}
   use Superls
   @moduledoc false
+
+  def check_password(store, passwd) do
+    case fix_password?(store, passwd) do
+      false -> check_password(store, Password.io_get_passwd())
+      val -> val
+    end
+  end
 
   def get_merged_index_from_store(store, passwd) do
     get_digests_names(store, passwd)
@@ -20,18 +27,34 @@ defmodule Superls.Store.Reader do
     end)
   end
 
+  defp fix_password?(store, passwd) do
+    store_path = Superls.cache_store_path(store)
+
+    case File.ls(store_path) do
+      {:ok, [first | _]} ->
+        {:ok, decrypted} = Superls.decrypt(first, passwd)
+
+        case decrypted do
+          # XCP wiil always be a valid keyword ?
+          "XCP" <> _ -> false
+          _ -> passwd
+        end
+
+      _ ->
+        passwd
+    end
+  rescue
+    _err ->
+      false
+  end
+
   def get_digests_names(store, passwd, only_passwd_check \\ false) do
     store_path = Superls.cache_store_path(store)
 
     case File.ls(store_path) do
       {:ok, [first | _] = list} ->
-        try do
-          {:ok, _} = Superls.decrypt(first, passwd)
-          if only_passwd_check, do: [], else: list
-        rescue
-          err ->
-            Superls.halt("wrong password for store `#{store}` ?\n(#{inspect(err)})")
-        end
+        {:ok, _} = Superls.decrypt(first, passwd)
+        if only_passwd_check, do: [], else: list
 
       _ ->
         []

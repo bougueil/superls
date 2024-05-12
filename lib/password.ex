@@ -1,8 +1,11 @@
-defmodule Password do
+defmodule Superls.Password do
   # https://dev.to/tizpuppi/password-input-in-elixir-31oo
   # Password prompt that hides input by every 1ms
   # clearing the line with stderr
   @moduledoc false
+
+  def io_get_passwd,
+    do: get(" enter password: ")
 
   def get(prompt) do
     pid = spawn_link(fn -> loop(prompt) end)

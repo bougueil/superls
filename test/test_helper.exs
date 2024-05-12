@@ -6,7 +6,7 @@ defmodule HelperTest do
   @root_dir Application.compile_env!(:superls, :stores_path) |> Path.dirname()
   use Superls
 
-  def create_indexes(volumes, password \\ false) do
+  def create_indexes(volumes, password \\ "") do
     for {_, media_path} <- volumes,
         do: Api.archive(media_path, default_store(), _confirm = false, password)
   end

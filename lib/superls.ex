@@ -32,7 +32,7 @@ defmodule Superls do
   def cache_path,
     do: Application.fetch_env!(:superls, :stores_path)
 
-  def encrypt(index, false),
+  def encrypt(index, ""),
     do: index
 
   def encrypt(index, password) do
@@ -40,7 +40,7 @@ defmodule Superls do
     |> Plug.Crypto.encrypt(password, index, max_age: :infinity)
   end
 
-  def decrypt(index, false),
+  def decrypt(index, ""),
     do: {:ok, index}
 
   def decrypt(index, password) do

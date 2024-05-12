@@ -73,7 +73,7 @@ defmodule Superls.ApiTest do
     inspect =
       try do
         Api.inspect_store(default_store(), "passwd2")
-      catch
+      rescue
         _ -> nil
       end
 
