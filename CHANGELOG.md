@@ -1,5 +1,8 @@
 # Changelog for Superls
 
+## v1.1.3  (2024-05-12)
+ * refactor password management
+
 ## v1.1.2  (2024-04-02)
  * fix tests
 
