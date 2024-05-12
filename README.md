@@ -2,7 +2,6 @@
 [![CI](https://github.com/bougueil/superls/actions/workflows/ci.yml/badge.svg)](https://github.com/bougueil/superls/actions/workflows/ci.yml)
 
 <!-- MDOC !-->
-
 A multi volumes files indexer and search engine elixir CLI (Linux).
 
 ### Indexing
@@ -66,7 +65,8 @@ Tags present in `./priv/banned_tags` are not indexed.
 <!-- MDOC !-->
 
 ## build
-sls is built with a secret key that can be customized with the `SLS_SECRET` environment variable.
+sls is built with a static secret key that can be customized with the `SLS_SECRET` environment variable.
+The secret key combined with the `-p` password protect the index content.
 ```
 mix deps.get
 mix do escript.build + escript.install
