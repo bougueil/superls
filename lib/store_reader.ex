@@ -89,7 +89,7 @@ defmodule Superls.Store.Reader do
 
   def volume_path_from_digests(store, passwd) do
     get_digests_names(store, passwd)
-    |> Enum.map(fn digest -> decode_digest_name(digest, passwd) end)
+    |> Enum.map(&"#{decode_digest_name(&1, passwd)} <= #{&1}")
   end
 
   def clean_old_digests(media_vol, store, passwd) do
@@ -125,9 +125,7 @@ defmodule Superls.Store.Reader do
 
   defp decode_digest_name(digest, passwd) do
     with {:ok, uri} <- Superls.decrypt(digest, passwd),
-         [index22, _] <- String.split(uri, "-"),
-         index_name = Path.basename(index22),
-         {:ok, vol_path} <- Base.decode32(index_name) do
+         vol_path <- decode_index_uri(uri) do
       vol_path
     else
       _error ->
