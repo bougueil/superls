@@ -112,7 +112,7 @@ defmodule Superls.Tag do
   """
   def search_matching_tags(merged_index, search_str) when is_binary(search_str) do
     search_str
-    |> to_tags_list()
+    |> to_keywords()
     |> Enum.map(&match_partial(&1, merged_index))
     |> Enum.reduce(&MapSet.intersection(&1, &2))
     |> MapSet.to_list()
@@ -127,7 +127,7 @@ defmodule Superls.Tag do
   defp banned_tag?(tag),
     do: Map.has_key?(@banned_tags, tag)
 
-  defp to_tags_list(search_str) do
+  defp to_keywords(search_str) do
     search_str
     |> String.downcase()
     |> Accent.normalize()
@@ -136,16 +136,16 @@ defmodule Superls.Tag do
   end
 
   # a user_tag matches partially the dirs_tags index
-  defp match_partial(search_tags, merged_index) do
+  defp match_partial(keyword, merged_index) do
     Enum.flat_map(merged_index, fn {tag, file_vol_list} ->
-      if(String.contains?(tag, search_tags), do: [file_vol_list], else: [])
+      if(String.contains?(tag, keyword), do: [file_vol_list], else: [])
     end)
     |> List.flatten()
     |> MapSet.new()
   end
 
   @doc """
-  sort tags with their appearance
+  sort tags with their occurence number
   """
   def tag_freq(merged_index) do
     Enum.reduce(merged_index, %{}, fn {tag, files}, acc0 ->
