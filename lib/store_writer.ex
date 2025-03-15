@@ -29,8 +29,10 @@ defmodule Superls.Store.Writer do
         prompted? && IO.puts("\rstore `#{store_name}` updated.")
         :ok
       rescue
-        ArgumentError ->
-          Superls.halt("** invalid password for store #{store_name}.")
+        e in ArgumentError ->
+          Superls.halt(
+            "** invalid password: '#{passwd}' for store: '#{store_name}'.\nerror: #{inspect(e)}"
+          )
       end
     else
       Superls.halt("Aborting.")
