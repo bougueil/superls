@@ -3,7 +3,7 @@ defmodule Superls.Tag do
 
   @moduledoc false
 
-  @separators [",", " ", "_", "-", ".", "*", "/", "(", ")", ":", "\t", "\n"]
+  @separators ~w(, _ - . * / ( \) : [ ] { } \xE2) ++ ["\t", "\n", " "]
 
   @banned_tags Superls.load_keys("banned_tags")
   @banned_ext Superls.load_keys("banned_file_ext")
