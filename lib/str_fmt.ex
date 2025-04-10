@@ -49,30 +49,22 @@ defmodule Superls.StrFmt do
 
   @allowed_fmt ":date, :datetime, :void, :sizeb, :fit_width, {:fit, screen_percent}"
 
-  defp fmt_type(fmt_type, val, acc, screen_w) do
-    case fmt_type do
-      :datetime ->
-        val |> DateTime.from_unix!() |> Calendar.strftime("%y-%m-%d %H:%M:%S")
+  defp fmt_type(:datetime, val, _acc, _scr_w),
+    do: val |> DateTime.from_unix!() |> Calendar.strftime("%y-%m-%d %H:%M:%S")
 
-      :date ->
-        val |> DateTime.from_unix!() |> DateTime.to_date() |> Date.to_string()
+  defp fmt_type(:date, val, _acc, _scr_w),
+    do: val |> DateTime.from_unix!() |> DateTime.to_date() |> Date.to_string()
 
-      :void ->
-        "#{val}"
+  defp fmt_type(:void, val, _acc, _scr_w), do: "#{val}"
+  defp fmt_type(:sizeb, val, _acc, _scr_w), do: pp_sz(val)
+  defp fmt_type(:fit_width, val, acc, scr_w), do: shorten_text(val, scr_w - String.length(acc))
 
-      :sizeb ->
-        pp_sz(val)
+  defp fmt_type({:fit, pcent}, val, _acc, scr_w)
+       when is_integer(pcent) and pcent < 101 and pcent >= 0,
+       do: shorten_text(val, div(scr_w * pcent, 100))
 
-      :fit_width ->
-        shorten_text(val, screen_w - String.length(acc))
-
-      {:fit, pcent} when is_integer(pcent) and pcent < 101 and pcent >= 0 ->
-        shorten_text(val, div(screen_w * pcent, 100))
-
-      _err ->
-        Superls.halt("Unrecognised format: #{inspect(fmt_type)}, choose btw: #{@allowed_fmt} .")
-    end
-  end
+  defp fmt_type(type, _val, _acc, _scr_w),
+    do: Superls.halt("Unrecognised format: #{inspect(type)}, choose btw: #{@allowed_fmt} .")
 
   @doc false
   def pp_sz(size) when is_integer(size) do
