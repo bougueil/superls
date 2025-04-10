@@ -81,7 +81,7 @@ defmodule Superls.Store.Reader do
   defp vol_name({:ok, decrypted}, _),
     do: decode_index_uri(decrypted)
 
-  defp vol_name(_, false),
+  defp vol_name(_, ""),
     do: "** need password"
 
   defp vol_name(_, _),
