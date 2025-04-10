@@ -7,5 +7,4 @@ config :superls,
   # size_threshold: in percent, 1 % means 2 sizes similar if less than 1% 
   size_threshold: 0.05,
   num_files_search_oldness: 1000,
-  num_days_search_bydate: 30,
-  ansi_enabled: true
+  num_days_search_bydate: 30
