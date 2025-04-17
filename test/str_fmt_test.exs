@@ -184,7 +184,7 @@ defmodule StrFmtTest do
 
   test "invalid str_fmt_spec" do
     res = [{"Bla", :foo, [:blue]}] |> StrFmt.to_string()
-    assert res == "\e[34minvalid str_fmt type: `:foo`\e[0m"
+    assert res == "invalid str_fmt type: `:foo`"
     assert HelperTest.fit_in_ncols?(res)
   end
 
