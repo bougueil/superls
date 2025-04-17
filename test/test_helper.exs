@@ -1,6 +1,6 @@
 ExUnit.start()
 
-alias Superls.Api
+alias Superls.{Api, StrFmt}
 
 defmodule HelperTest do
   @root_dir Application.compile_env!(:superls, :stores_path) |> Path.dirname()
@@ -22,4 +22,11 @@ defmodule HelperTest do
 
   def empty_store,
     do: File.rm_rf(@root_dir)
+
+  @ncols StrFmt.ncols()
+
+  def fit_in_ncols?(str) do
+    String.split(str, "\n", trim: true)
+    |> Enum.all?(&(elem(StrFmt.text_length(&1), 1) <= @ncols))
+  end
 end
