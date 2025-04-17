@@ -2,10 +2,33 @@ defmodule Superls.StrFmt do
   require Logger
   import Kernel, except: [to_string: 1]
 
-  @moduledoc "README.md"
-             |> File.read!()
-             |> String.split("<!-- MDOC !-->")
-             |> Enum.fetch!(1)
+  @moduledoc """
+  ```elixir
+  iex> StrFmt.to_string [{12000, :sizeb, [:bright]}]
+  "\e[1m  11.7K\e[0m"
+  ```
+
+  or composable form :
+
+  ```elixir
+  iex> [ [str_fmt1, str_fmt2], 
+         str_fmt3
+       ] |> StrFmt.to_string()
+  ```
+
+  str_fmt_spec                        | output for a 8 columns terminal
+  :---------------------------------- | :---------
+  `"abc"`                             | `"abc"`
+  `[{"abc", :str, [:blue]}]`          | `"\e[34mabc\e[0m"`
+  `[{123, :str, [:blue]}]`            | `"\e[34m123\e[0m"`
+  `[{12000, :sizeb, []}]`             | `"  11.7K"`  # could be B, K, M and G.
+  `[{1696153262, :date, [:blue]}]`    | `"\e[34m2023-10-01\e[0m"`
+  `[{1696153262, :datetime, []}]`     | `"23-10-01 09:41:02"`
+  `[{"9char-str", {:scr,50}, []}]`    | `"9..r"`     # 50% of 9 chars screen
+  `[{"9char-str", :scr, []}]`         | `"9ch..str"` # equiv. of {:scr, 100}
+  `[{"foo_", :padr, []}]`             | `"foo_____"`
+  `[{"_", :padl, [:red]}]`            | `"\e[31m_____\e[0m"`
+  """
 
   @type str_fmt_unit() ::
           String.t()
