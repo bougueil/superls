@@ -1,6 +1,6 @@
 ExUnit.start()
 
-alias Superls.{Api, StrFmt}
+alias Superls.{Store}
 
 defmodule HelperTest do
   @root_dir Application.compile_env!(:superls, :stores_path) |> Path.dirname()
@@ -8,7 +8,9 @@ defmodule HelperTest do
 
   def create_indexes(volumes, password \\ "") do
     for {_, media_path} <- volumes,
-        do: Api.archive(media_path, default_store(), _confirm = false, password)
+        do: :ok = Store.archive(media_path, default_store(), password)
+
+    :ok
   end
 
   def create_file(vol_path, fname, opts \\ []) do
@@ -22,6 +24,15 @@ defmodule HelperTest do
 
   def empty_store,
     do: File.rm_rf(@root_dir)
+
+  def get_merged_index(store_name, password \\ ""),
+    do: Store.get_merged_index_from_store(store_name, password)
+
+  def extract_filenames_from_search(search_result) do
+    search_result
+    |> Superls.MergedIndex.flatten_files_vol()
+    |> Enum.map(fn {fp, _f_info, _vol} -> fp end)
+  end
 
   @ncols StrFmt.ncols()
 
