@@ -4,62 +4,49 @@ defmodule Superls.MatchSize do
   @moduledoc false
   # group files by size
 
-  # @size_threshold is the size difference percentage threshold
   @size_threshold Application.compile_env!(:superls, :size_threshold) / 100
 
-  def pretty_print_result(result) do
-    for {sz, similar_files} <- result do
-      IO.puts(
-        IO.ANSI.light_magenta() <>
-          IO.ANSI.reverse() <>
-          "#{Superls.pp_sz(sz)}" <>
-          IO.ANSI.reverse_off() <>
-          "________________________________________________________________" <>
-          IO.ANSI.reset()
-      )
+  def size(result), do: length(result)
 
-      [{file1, vol1} | rest] = similar_files
-
-      IO.puts(
-        IO.ANSI.bright() <>
-          Path.basename(file1.name) <>
-          IO.ANSI.reset() <>
-          "\t" <>
-          Superls.pp_sz(file1.size) <>
-          "\t" <>
-          vol1 <>
-          "/" <>
-          Path.dirname(file1.name) <>
-          IO.ANSI.reset()
-      )
-
-      for {file2, vol2} <- rest do
-        #  " - " <>
-        #  " - " <>
-        (IO.ANSI.bright() <>
-           Path.basename(file2.name) <>
-           IO.ANSI.reset() <>
-           "\t" <>
-           Superls.pp_sz(file2.size) <>
-           "\t" <>
-           vol2 <> "/" <> Path.dirname(file2.name) <> IO.ANSI.reset())
-        |> IO.puts()
-      end
-    end
+  def to_string(duplicates) do
+    for {sz, [{fp1, f1_info, vol1} | rest]} <- duplicates,
+        do:
+          [
+            {sz, :sizeb, [:light_magenta, :reverse]},
+            {"____________________", :str, [:light_magenta]},
+            "\n",
+            {f1_info.size, :sizeb, []},
+            " ",
+            {Path.basename(fp1), {:scr, 60}, [:bright]},
+            "  ",
+            {Path.join(vol1, f1_info.dir), :scr, []},
+            "\n",
+            for {fp2, f2_info, vol2} <- rest do
+              [
+                {f2_info.size, :sizeb, []},
+                " ",
+                {Path.basename(fp2), :str, [:bright]},
+                "  ",
+                {Path.join(vol2, f2_info.dir), :scr, []},
+                "\n"
+              ]
+            end
+          ]
+          |> StrFmt.to_string()
   end
 
   def best_size(files) do
-    len = length(files)
-
-    files =
+    {len, files} =
       files
-      |> Enum.sort(&(elem(elem(&1, 0), 0).size <= elem(elem(&2, 0), 0).size))
-      |> Superls.build_indexed_list(len)
+      |> Enum.sort(&(elem(&1, 1).size <= elem(&2, 1).size))
+
+      # use Enum.with_index() ?
+      |> Superls.build_indexed_list()
 
     files
     |> Flow.from_enumerable()
-    |> Flow.flat_map(fn {{file_vol, _tags}, start_compare} ->
-      by_file_size(Enum.slice(files, start_compare..len), file_vol, [])
+    |> Flow.flat_map(fn {file, start_compare} ->
+      near_sz_files(Enum.slice(files, start_compare..len), file, [])
     end)
     |> Flow.partition(key: {:elem, 0})
     |> Flow.reduce(fn -> %{} end, fn {sz, [f1, f2]}, acc ->
@@ -75,30 +62,29 @@ defmodule Superls.MatchSize do
       end
     end)
     |> Enum.into(%{})
+    |> Enum.sort(&(elem(&1, 0) >= elem(&2, 0)))
   end
 
-  defp by_file_size([], _file_vol, acc),
+  def near_sz_files([], _file_vol, acc),
     do: acc
 
-  defp by_file_size(
-         [{{file2_vol = {file2, _vol}, _tag}, _index} | rest],
-         file_vol = {file, _},
-         acc
-       ) do
-    if match_sz(file.size, file2.size) do
-      by_file_size(rest, file_vol, [
-        {file.size, [file_vol, file2_vol]} | acc
+  def near_sz_files(
+        [{file2 = {_fp2, fp2_info, _vol2}, _index} | rest],
+        file = {_fp, fp_info, _vol},
+        acc
+      ) do
+    if near_sz?(fp_info.size, fp2_info.size) do
+      near_sz_files(rest, file, [
+        {fp_info.size, [file, file2]} | acc
       ])
     else
       acc
     end
   end
 
-  defp match_sz(_, 0),
-    do: false
+  defp near_sz?(_, 0), do: false
 
-  # size1 > size2 thanks to sort
-  defp match_sz(size1, size2) do
+  defp near_sz?(size1, size2) do
     (size1 - size2) / size2 < @size_threshold
   end
 end
