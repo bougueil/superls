@@ -16,7 +16,7 @@ defmodule Superls.StrFmt do
        ] |> StrFmt.to_string()
   ```
 
-  str_fmt_spec                        | output for a 8 columns terminal
+  str_fmt_unit                        | output for a 8 columns terminal
   :---------------------------------- | :---------
   `"abc"`                             | `"abc"`
   `[{"abc", :str, [:blue]}]`          | `"\e[34mabc\e[0m"`
