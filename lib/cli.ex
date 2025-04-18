@@ -1,6 +1,6 @@
 defmodule Superls.CLI do
   @moduledoc false
-  alias Superls.{Api, SearchCLI, Store, Password}
+  alias Superls.{SearchCLI, Store, Password, Store}
 
   use Superls
 
@@ -10,31 +10,31 @@ defmodule Superls.CLI do
   ]
 
   def main(argv) do
-    _ = Superls.maybe_create_cache_path()
+    _ = Store.maybe_create_cache_path()
 
     with {opts, args, []} <-
            OptionParser.parse(argv, aliases: [p: :password, s: :store], strict: @options),
          is_password? <- Keyword.get(opts, :password, false),
-         password <- if(is_password?, do: Password.io_get_passwd(), else: ""),
+         password <- if(is_password?, do: Password.io_get(), else: ""),
          store <- Keyword.get(opts, :store, default_store()),
-         password <- Store.Reader.check_password(store, password) do
+         password <- Store.check_password(store, password) do
       main_args(args, store, password)
     else
       {_, _, wrong} ->
         IO.puts("invalid command, check #{inspect(wrong)}")
     end
   catch
-    err -> IO.puts(err)
+    err -> IO.puts("#{err}")
   end
 
   defp main_args(["archive", media_path], store_name, password) do
-    Api.archive(media_path, store_name, _confirm? = true, password)
+    Store.archive(media_path, store_name, password)
   end
 
   defp main_args(["search"], store_name_or_path, password) do
     store_name_or_path
-    |> Store.Reader.get_merged_index_from_store(password)
-    |> SearchCLI.command_line(store_name_or_path)
+    |> Store.get_merged_index_from_store(password)
+    |> SearchCLI.command_line(store: store_name_or_path, passwd: password)
   rescue
     _e in File.Error ->
       default = default_store()
@@ -51,34 +51,18 @@ defmodule Superls.CLI do
       """)
   end
 
-  defp main_args(["inspect"], store_name, passwd) do
-    info = Api.inspect_store(store_name, passwd)
-
-    vols =
-      ["" | Store.Reader.volume_path_from_digests(store_name, passwd)]
-      |> Enum.intersperse("\n  - ")
-
-    IO.puts("""
-    Details for store `#{store_name}`:
-    most frequent tags: #{info.most_frequent}
-    tags: #{info.num_tags},\nfiles: #{info.num_files},
-    volumes:#{vols}
-    """)
-  end
-
   defp main_args(["help"], _store, _passwd) do
-    path = Store.Reader.cache_path()
+    path = Store.cache_path()
 
     IO.puts("""
     Usage: superls command [params] [-p -s my_store]
-      -s specifies a store name other than default one `default`
-      -p requires to enter a password
+      -s specifies a store name, no -s defaults to store `default`
+      -p requires to enter a password, no -p defaults to no password 
     Available commands are:
-      archive:\n\t  superls archive /path/to/my/files\n\t  note: links prevent archiving `find /path/to/my/files -type l -ls`
+      archive:\n\t  superls archive /path/to/my/files\n\t  note: links prevent archiving, executes this before archiving: `find /path/to/my/files -type l -ls`
       search:\n\t  superls search
-      inspect:\n\t  superls inspect
     Stores:
-      #{Enum.intersperse(Store.Reader.list_stores(), ", ")}
+      #{Enum.intersperse(Store.list_stores(), ", ")}
 
     Cache information:
       cache_path: #{path}
