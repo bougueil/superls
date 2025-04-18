@@ -1,7 +1,7 @@
 defmodule Superls.MixProject do
   use Mix.Project
 
-  @version "1.1.3"
+  @version "1.1.4"
   def project do
     [
       app: :superls,
