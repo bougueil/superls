@@ -182,8 +182,8 @@ defmodule StrFmtTest do
     assert HelperTest.fit_in_ncols?(res)
   end
 
-  test "invalid str_fmt_spec" do
-    res = [{"Bla", :foo, [:blue]}] |> StrFmt.to_string()
+  test "invalid str_fmt_unit" do
+    res = [{"Bla", :foo, []}] |> StrFmt.to_string()
     assert res == "invalid str_fmt type: `:foo`"
     assert HelperTest.fit_in_ncols?(res)
   end
