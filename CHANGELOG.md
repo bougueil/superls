@@ -1,5 +1,10 @@
 # Changelog for Superls
 
+## v1.2.0  (2025-04-18)
+ * refactor index structure
+ * improve search files output
+ * remove API module, unify Store modules
+
 ## v1.1.3  (2024-05-12)
  * refactor password management
 
