@@ -2,7 +2,7 @@ defmodule Superls.MatchDateTest do
   use ExUnit.Case
   import ExUnit.CaptureIO
 
-  alias Superls.{Api, Store}
+  alias Superls.{Store, MergedIndex, MatchDate}
   # defines default_store
   use Superls
 
@@ -10,7 +10,7 @@ defmodule Superls.MatchDateTest do
 
   # this test uses 2 volumes_paths containing 3 files
   volumes_paths = for e <- ["vol1", "vol2"], do: Path.join(@root_dir, e)
-  @volumes Enum.zip(Enum.map(volumes_paths, &Store.Writer.encode_digest_uri/1), volumes_paths)
+  @volumes Enum.zip(Enum.map(volumes_paths, &Store.encode_digest_uri/1), volumes_paths)
 
   @f1_bbb "file1.2022.FRENCH.aaa.bbb.ccc.ogv"
   @f2_bbb "file2.2022.FRENCH.AAA.bbb.ddd.ogv"
@@ -38,18 +38,35 @@ defmodule Superls.MatchDateTest do
   end
 
   test "match date oldness xo-xn-rn-ro" do
+    mi = HelperTest.get_merged_index(default_store())
+
     for search_type <- ~w(xo ro xn rn) do
-      {result, _} = with_io(fn -> Api.search_oldness(default_store(), search_type, 10) end)
+      {result, _} = with_io(fn -> MergedIndex.search_oldness(mi, search_type, 10) end)
       assert length(result) == 7
     end
   end
 
   test "match bydate  xd-rd" do
-    for search_type <- ~w(xd rd) do
-      {result, _} =
-        with_io(fn -> Api.search_bydate(default_store(), search_type, Date.utc_today(), 1) end)
+    mi = HelperTest.get_merged_index(default_store())
 
-      assert length(result) == 7
+    for search_type <- ~w(xd rd) do
+      result =
+        MergedIndex.search_bydate(mi, search_type, Date.utc_today(), 1)
+
+      assert 7 == length(result)
+    end
+  end
+
+  test "pretty_print xd rd" do
+    for search_type <- ~w(xd rd) do
+      {result, _output} =
+        with_io(fn ->
+          HelperTest.get_merged_index(default_store())
+          |> MergedIndex.search_bydate(search_type, Date.utc_today(), 1)
+          |> MatchDate.to_string(search_type)
+        end)
+
+      assert 7 == String.split(result, "\n", trim: true) |> length()
     end
   end
 end

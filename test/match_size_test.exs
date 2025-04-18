@@ -1,7 +1,8 @@
 defmodule Superls.MatchSizeTest do
   use ExUnit.Case
+  import ExUnit.CaptureIO
 
-  alias Superls.{Api, Store}
+  alias Superls.{Store, MergedIndex, MatchSize}
 
   # defines default_store
   use Superls
@@ -10,7 +11,7 @@ defmodule Superls.MatchSizeTest do
 
   # this test uses 2 volumes_paths containing 3 files
   volumes_paths = for e <- ["vol1", "vol2"], do: Path.join(@root_dir, e)
-  @volumes Enum.zip(Enum.map(volumes_paths, &Store.Writer.encode_digest_uri/1), volumes_paths)
+  @volumes Enum.zip(Enum.map(volumes_paths, &Store.encode_digest_uri/1), volumes_paths)
 
   @f1_bbb "file1.2022.FRENCH.aaa.bbb.ccc.ogv"
   @f2_bbb "file2.2022.FRENCH.AAA.bbb.ddd.ogv"
@@ -52,7 +53,23 @@ defmodule Superls.MatchSizeTest do
   end
 
   test "match size" do
-    duplicates = Api.search_similar_size(default_store())
-    assert Map.keys(duplicates) |> Enum.member?(10)
+    duplicates =
+      HelperTest.get_merged_index(default_store())
+      |> MergedIndex.search_similar_size()
+
+    assert MatchSize.size(duplicates) == 1
+    assert 2 = Enum.at(duplicates, 0) |> elem(1) |> length()
+  end
+
+  test "pretty_print" do
+    {_result, output} =
+      with_io(fn ->
+        HelperTest.get_merged_index(default_store())
+        |> MergedIndex.search_similar_size()
+        |> Superls.MatchSize.to_string()
+        |> IO.puts()
+      end)
+
+    assert 2 == Regex.scan(~r/file3/, output) |> length()
   end
 end

@@ -1,6 +1,7 @@
 defmodule Superls.MatchJaroTest do
   use ExUnit.Case
-  alias Superls.{Api, Store}
+  alias Superls.{MergedIndex, Store}
+  import ExUnit.CaptureIO
 
   # defines default_store
   use Superls
@@ -9,7 +10,7 @@ defmodule Superls.MatchJaroTest do
 
   # this test uses 2 volumes_paths containing 3 files
   volumes_paths = for e <- ["vol1", "vol2"], do: Path.join(@root_dir, e)
-  @volumes Enum.zip(Enum.map(volumes_paths, &Store.Writer.encode_digest_uri/1), volumes_paths)
+  @volumes Enum.zip(Enum.map(volumes_paths, &Store.encode_digest_uri/1), volumes_paths)
 
   @f1_bbb "file1.2022.FRENCH.aaa.bbb.ccc.ogv"
   @f2_bbb "file2.2022.FRENCH.AAA.bbb.ddd.ogv"
@@ -37,7 +38,21 @@ defmodule Superls.MatchJaroTest do
   end
 
   test "jaro" do
-    duplicates = Api.search_duplicated_tags(default_store())
+    duplicates =
+      HelperTest.get_merged_index(default_store())
+      |> MergedIndex.search_duplicated_tags()
+
     assert Map.keys(duplicates) |> Enum.member?(1.0)
+  end
+
+  test "pretty_print" do
+    {result, _output} =
+      with_io(fn ->
+        HelperTest.get_merged_index(default_store())
+        |> MergedIndex.search_duplicated_tags()
+        |> Superls.MatchJaro.to_string()
+      end)
+
+    assert true == String.contains?("#{result}", "distance: 1.0")
   end
 end
