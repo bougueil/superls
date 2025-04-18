@@ -2,12 +2,12 @@
 [![CI](https://github.com/bougueil/superls/actions/workflows/ci.yml/badge.svg)](https://github.com/bougueil/superls/actions/workflows/ci.yml)
 
 <!-- MDOC !-->
-A multi volumes files indexer and search engine elixir CLI (Linux).
+A multi volumes files indexer and search engine CLI (elixir, Linux).
 
 ### Indexing
-  `superls` analyzes the filenames of a volume, extracts the filename tags and other file attributes such as size, and builds an index for the volume.
+  `superls` analyzes the filenames of a volume, extracts the filename tags and other file attributes such as size, date and builds an index for the volume.
 
-  Unless a store name is given (-s), volume indexes are grouped together in the `default` store.
+  Unless a store name is given (-s), all volume indexes are stored in the `default` store folder.
 
   Stores are saved compressed and optionally password encrypted.
 
@@ -29,11 +29,11 @@ The command to search tags in the `default` store with the CLI is :
 ```bash
 superls search
 ```
-An interactive shell asks for commands like query by a list of tags separated by space, a tag can be incomplete.<br>
+An interactive shell asks for commands like query by a list of tags, a string separated by space. A tag can be incomplete.<br>
 The result is a list of matched files.
 
 ### Other CLI commands
-  For help, getting stores details ...  :
+  For help, getting stores commands ...  :
 
 ```bash
 superls
@@ -42,13 +42,14 @@ superls
 
 ### What is parsed ?
 
-`superls` tokenizes filenames with the following delimiters :
+`superls` tokenizes the filenames with the following delimiters :
 ```elixir
-  ",", " ", "_", "-", ".", "*", "/", "(", ")", ":", "\t", "\n"
-```
+  ",",  "_",  "-",  ".",  "*",  "/",
+  "(",  ")",  ":",  "|",  "\"",  "[",  "]",
+  "{",  "}",  "\t",  "\n",  " 
+  ```
 
-Collected tags are grouped with some files attributes like the file size.<br>
-See `ListerFile{}`struct for more details about collected data.
+Collected tags are grouped with some files attributes, currently: size, mtime, atime.<br>
 
 Tags and file attributes constitute the index entry for the file.
 
