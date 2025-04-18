@@ -1,6 +1,6 @@
 ExUnit.start()
 
-alias Superls.{Store}
+alias Superls.{Store, StrFmt}
 
 defmodule HelperTest do
   @root_dir Application.compile_env!(:superls, :stores_path) |> Path.dirname()
