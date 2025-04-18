@@ -30,7 +30,7 @@ defmodule Superls.MixProject do
     [
       {:flow, "~> 1.2.4"},
       {:plug_crypto, "~> 2.1"},
-      {:benchee, "~> 1.3", only: :test, runtime: false},
+      {:benchee, "~> 1.4", only: :test, runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.32", only: :docs}
