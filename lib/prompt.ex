@@ -1,8 +1,21 @@
 defmodule Superls.Prompt do
   @moduledoc false
 
-  def prompt_new_value(prompt, default, input_hdlr, prompted? \\ false) do
-    new_value = running_test?() || !prompted? || yes_new_value(IO.gets(prompt))
+  @doc """
+  return true if user enter Y/y/RETURN
+  """
+  @spec valid_default_yes?(String.t()) :: boolean()
+  def valid_default_yes?(msg), do: valid_default_no_yes_prompt?(msg, :yes)
+
+  @doc """
+  return true if user enter N/n/RETURN
+  """
+  @spec valid_default_no?(String.t()) :: boolean()
+  def valid_default_no?(msg), do: valid_default_no_yes_prompt?(msg, :no)
+
+  @spec valid_default_or_new_input(String.t(), any(), (String.t() -> any())) :: boolean() | any()
+  def valid_default_or_new_input(prompt, default, input_hdlr) do
+    new_value = yes_or_input(Superls.gets(prompt, "y"))
 
     case new_value do
       true ->
@@ -13,17 +26,20 @@ defmodule Superls.Prompt do
     end
   end
 
-  def yes_new_value(string) when is_binary(string),
+  defp valid_default_no_yes_prompt?(prompt, :yes) do
+    match?(
+      <<n::size(8), _::binary>> when n not in [?n, ?N],
+      Superls.gets(prompt <> " [Y/n] ? ", "y")
+    )
+  end
+
+  defp valid_default_no_yes_prompt?(prompt, :no) do
+    match?(
+      <<n::size(8), _::binary>> when n not in [?y, ?Y],
+      Superls.gets(prompt <> " [N/y] ? ", "y")
+    )
+  end
+
+  defp yes_or_input(string) when is_binary(string),
     do: String.trim(string) in ["", "y", "Y", "yes", "YES", "Yes"] || string
-
-  # prompt the `prompt` message and returns true or the entered value
-  def prompt(prompt, prompted? \\ false),
-    do: running_test?() || !prompted? || yes(IO.gets(prompt))
-
-  # returns true or the entered value
-  def yes(string) when is_binary(string),
-    do: String.trim(string) in ["", "y", "Y", "yes", "YES", "Yes"]
-
-  defp running_test?,
-    do: Code.loaded?(HelperTest)
 end
