@@ -5,51 +5,38 @@ defmodule Superls.MatchJaro do
   # group files by similar tags
 
   @jaro_threshold Application.compile_env!(:superls, :jaro_threshold)
-  def pretty_print_result(result) do
-    for {d, similar_files} <- result do
-      IO.write(
-        IO.ANSI.light_magenta() <>
-          IO.ANSI.reverse() <>
-          "distance: #{d}" <>
-          IO.ANSI.reverse_off() <>
-          "________________________________________________________________" <>
-          IO.ANSI.reset()
-      )
+  def size(result), do: map_size(result)
 
-      for {{file1, vol1}, {file2, vol2}} <- similar_files do
-        #  " - " <>
-        #  " - " <>
-        ("\n" <>
-           IO.ANSI.bright() <>
-           Path.basename(file1.name) <>
-           IO.ANSI.reset() <>
-           "\t" <>
-           Superls.pp_sz(file1.size) <>
-           "\t" <>
-           vol1 <>
-           "/" <>
-           Path.dirname(file1.name) <>
-           IO.ANSI.reset() <>
-           "\n" <>
-           IO.ANSI.bright() <>
-           Path.basename(file2.name) <>
-           IO.ANSI.reset() <>
-           "\t" <>
-           Superls.pp_sz(file2.size) <>
-           "\t" <>
-           vol2 <> "/" <> Path.dirname(file2.name) <> IO.ANSI.reset())
-        |> IO.puts()
-      end
+  def to_string(result) do
+    for {dist, similar_files} <- result do
+      [
+        {"distance: #{dist}", :str, [:light_magenta, :reverse]},
+        {"_", :padl, [:light_magenta]},
+        "\n",
+        for {{file1, vol1, fp1}, {file2, vol2, fp2}} <- similar_files do
+          [
+            {file1, :str, [:bright]},
+            "  ",
+            {Path.join(vol1, fp1), :scr, []},
+            "\n",
+            {file2, :str, [:bright]},
+            "  ",
+            {Path.join(vol2, fp2), :scr, []},
+            "\n",
+            "\n"
+          ]
+        end
+      ]
+      |> StrFmt.to_string()
     end
   end
 
+  @spec best_jaro([tuple()]) :: %{float() => [{tuple(), tuple()}]}
   def best_jaro(files) do
-    len = length(files)
-
-    files =
+    {len, files} =
       files
       |> build_f_mapset([])
-      |> Superls.build_indexed_list(len)
+      |> Superls.build_indexed_list()
 
     files
     |> Flow.from_enumerable()
@@ -80,8 +67,8 @@ defmodule Superls.MatchJaro do
 
   defp build_f_mapset([], list), do: list
 
-  defp build_f_mapset([{fv, tags} | rest], acc) do
-    build_f_mapset(rest, [{fv, MapSet.new(tags)} | acc])
+  defp build_f_mapset([{fp, fp_info, vol} | rest], acc) do
+    build_f_mapset(rest, [{{fp, vol, fp_info.dir}, MapSet.new(fp_info.tags)} | acc])
   end
 
   defp jaro_per_file_mapset([], _file_vol, _tags, acc),
