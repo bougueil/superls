@@ -1,5 +1,6 @@
 defmodule Superls.MatchTag do
   use Superls
+  alias Superls.{StrFmt}
 
   @moduledoc false
 

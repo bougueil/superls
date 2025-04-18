@@ -1,6 +1,7 @@
 defmodule Superls.MatchJaro do
   use Superls
 
+  alias Superls.{StrFmt}
   @moduledoc false
   # group files by similar tags
 

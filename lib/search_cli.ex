@@ -8,7 +8,8 @@ defmodule Superls.SearchCLI do
     Prompt,
     Tag,
     Store,
-    MergedIndex
+    MergedIndex,
+    StrFmt
   }
 
   @num_files_search_oldness Application.compile_env!(:superls, :num_files_search_oldness)

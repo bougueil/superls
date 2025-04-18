@@ -1,5 +1,6 @@
 defmodule Superls.MatchSize do
   use Superls
+  alias Superls.{StrFmt}
 
   @moduledoc false
   # group files by size

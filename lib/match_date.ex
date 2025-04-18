@@ -2,6 +2,7 @@ defmodule Superls.MatchDate do
   @day_seconds 3600 * 24
   @moduledoc false
   use Superls
+  alias Superls.{StrFmt}
 
   # list oldest / newest files according to mtime / atime
 
