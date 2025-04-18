@@ -4,10 +4,11 @@ defmodule Superls.Password do
   # clearing the line with stderr
   @moduledoc false
 
-  def io_get_passwd,
+  @spec io_get() :: String.t()
+  def io_get,
     do: get(" enter password: ")
 
-  def get(prompt) do
+  defp get(prompt) do
     pid = spawn_link(fn -> loop(prompt) end)
     ref = make_ref()
     value = IO.gets("#{prompt} ")
