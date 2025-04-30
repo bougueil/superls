@@ -1,6 +1,6 @@
 defmodule Superls.MergedIndex do
   @moduledoc """
-      iex> mi = Superls.Store.get_merged_index_from_store("test",""= _passwd)
+      iex> mi = Superls.Store.get_merged_index_from_store("test", "" = _passwd)
       `[{"/media/vol1",
          %{
            "ACTION" => %{
@@ -54,7 +54,7 @@ defmodule Superls.MergedIndex do
           }
         }}]`
 
-  This sample show a merged index from 2 volumes, `/media/vol1` and `/media/vol2 ⭐️`.
+  This sample shows a merged index from 2 volumes, `/media/vol1` and `/media/vol2 ⭐️`.
 
   Each index holds a map of tags.
 
