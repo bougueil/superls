@@ -21,12 +21,8 @@ defmodule Superls.MatchDate do
     date_min = date_unix - ndays * @day_seconds
     date_max = date_unix + ndays * @day_seconds
 
-    Enum.reduce(files, [], fn e = {_fp, fp_info, _vol}, acc ->
-      if field.(fp_info) >= date_min and fp_info.mtime <= date_max do
-        [e | acc]
-      else
-        acc
-      end
+    Enum.filter(files, fn {_fp, fp_info, _vol} ->
+      field.(fp_info) >= date_min and fp_info.mtime <= date_max
     end)
   end
 

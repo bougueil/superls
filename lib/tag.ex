@@ -115,14 +115,6 @@ defmodule Superls.Tag do
 
   defp banned_tag?(tag), do: Map.has_key?(@banned_tags, tag)
 
-  # defp to_keywords(search_str) do
-  #   search_str
-  #   |> String.downcase()
-  #   |> Accent.normalize()
-  #   |> String.split(@search_sep, trim: true)
-  #   |> Enum.reject(&(String.length(&1) == 1))
-  # end
-
   defp to_keywords(search_str) do
     search_str
     |> String.downcase()
@@ -134,9 +126,8 @@ defmodule Superls.Tag do
 
   defp match_partial(keywd, acc0, tags) do
     keywd_files =
-      Enum.reduce(tags, [], fn {tag, files}, acc ->
-        if(String.contains?(tag, keywd), do: acc ++ Map.to_list(files), else: acc)
-      end)
+      Enum.filter(tags, &String.contains?(elem(&1, 0), keywd))
+      |> Enum.flat_map(&Map.to_list(elem(&1, 1)))
       |> MapSet.new()
 
     if acc0 do

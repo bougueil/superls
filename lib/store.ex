@@ -116,9 +116,8 @@ defmodule Superls.Store do
   defp load_tags(digests, store, passwd) when is_list(digests) do
     path_file = cache_store_path(store)
 
-    Enum.reduce(digests, [], fn {{digest, _date, _sz}, vol_path}, acc ->
-      tags = load_digest("#{path_file}/#{digest}", passwd)[:tokens]
-      [{vol_path, tags} | acc]
+    Enum.map(digests, fn {{digest, _date, _sz}, vol_path} ->
+      {vol_path, load_digest("#{path_file}/#{digest}", passwd)[:tokens]}
     end)
   end
 
