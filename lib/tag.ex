@@ -6,16 +6,16 @@ defmodule Superls.Tag do
   @banned_tags Superls.read_banned("banned_tags")
   @banned_ext Superls.read_banned("banned_file_ext")
 
-  @doc "Tokenize `media_path` volume and returns its `index`."
-  @spec index_media_path(media_path :: Path.t()) :: index :: MergedIndex.tags()
-  def index_media_path(media_path) do
-    media_path = Path.absname(media_path)
+  @doc "Tokenize `media_dir` volume and returns its `index`."
+  @spec index_media_dir(media_dir :: Path.t()) :: index :: MergedIndex.tags()
+  def index_media_dir(media_dir) do
+    media_dir = Path.absname(media_dir)
 
-    ls_r(media_path)
+    ls_r(media_dir)
     |> Flow.from_enumerable()
-    |> Flow.flat_map(&index_media_path_map(&1, media_path))
+    |> Flow.flat_map(&index_media_dir_map(&1, media_dir))
     |> Flow.partition(key: {:elem, 0})
-    |> Flow.reduce(fn -> %{} end, &index_media_path_reduce(&1, &2))
+    |> Flow.reduce(fn -> %{} end, &index_media_dir_reduce(&1, &2))
     |> Enum.into(%{})
   end
 
@@ -64,15 +64,19 @@ defmodule Superls.Tag do
      |> Enum.reject(fn {_vol, fps} -> fps == [] end), keywords}
   end
 
-  defp index_media_path_map(fp, path) do
+  defp index_media_dir_map(fp, media_dir) do
     if banned_ext?(Path.extname(fp)) or File.dir?(fp) do
       []
     else
-      rel_fp = Path.relative_to(fp, path)
+      rel_fp = Path.relative_to(fp, media_dir)
       file = Path.basename(rel_fp)
 
       try do
         stat = File.stat!(fp, time: :posix)
+
+# TODO add tokens from relative dir in addition to file token
+# in search search for both tokens 
+# in similarity search for file tokens 
 
         file
         |> String.downcase()
@@ -92,7 +96,7 @@ defmodule Superls.Tag do
     end
   end
 
-  defp index_media_path_reduce({tag, {file, file_info}}, acc) do
+  defp index_media_dir_reduce({tag, {file, file_info}}, acc) do
     case acc do
       %{^tag => files} ->
         if Map.has_key?(files, file) do
