@@ -4,28 +4,28 @@ defmodule Superls.Store do
   @moduledoc "Store access facilities."
   @sep_path "-"
 
-  @doc "Create a `merged_index` from `media_path`, `store` and `passwd`."
-  @spec archive(media_path :: MergedIndex.volume(), store :: store(), passwd :: String.t()) ::
+  @doc "Create a `merged_index` from `media_dir`, `store` and `passwd`."
+  @spec archive(media_dir :: MergedIndex.volume(), store :: store(), passwd :: String.t()) ::
           no_return()
-  def archive(media_path, store_name \\ default_store(), passwd \\ "") do
-    !File.dir?(media_path) &&
-      Superls.halt("error: media_path: #{media_path} must point to a directory")
+  def archive(media_dir, store_name \\ default_store(), passwd \\ "") do
+    !File.dir?(media_dir) &&
+      Superls.halt("error: media_dir: #{media_dir} must point to a directory")
 
     if Prompt.valid_default_yes?("Do archive in store `#{store_name}` ?") do
       store_cache_path = maybe_create_dir(store_name)
-      media_path = String.trim_trailing(media_path, "/")
+      media_dir = String.trim_trailing(media_dir, "/")
 
       digest =
-        Tag.index_media_path(media_path)
+        Tag.index_media_dir(media_dir)
         |> :erlang.term_to_binary()
         |> :zlib.gzip()
         |> Superls.encrypt(passwd)
 
       try do
-        clean_old_digests(media_path, store_name, passwd)
+        clean_old_digests(media_dir, store_name, passwd)
 
         encoded_path =
-          "#{store_cache_path}/#{Superls.encrypt(encode_digest_uri(media_path), passwd)}"
+          "#{store_cache_path}/#{Superls.encrypt(encode_digest_uri(media_dir), passwd)}"
 
         :ok = File.write(encoded_path, digest)
         Superls.puts("\rstore `#{store_name}` updated.")
