@@ -74,9 +74,9 @@ defmodule Superls.Tag do
       try do
         stat = File.stat!(fp, time: :posix)
 
-# TODO add tokens from relative dir in addition to file token
-# in search search for both tokens 
-# in similarity search for file tokens 
+        # TODO add tokens from relative dir in addition to file token
+        # in search search for both tokens 
+        # in similarity search for file tokens 
 
         file
         |> String.downcase()
