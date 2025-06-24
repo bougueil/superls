@@ -20,7 +20,7 @@ defmodule Superls.MatchSize do
             " ",
             {Path.basename(fp1), {:scr, 60}, [:bright]},
             "  ",
-            {Path.join(vol1, f1_info.dir), :scr, []},
+            {Path.join(vol1, Path.dirname(fp1)), :scr, []},
             "\n",
             for {fp2, f2_info, vol2} <- rest do
               [
@@ -28,7 +28,7 @@ defmodule Superls.MatchSize do
                 " ",
                 {Path.basename(fp2), :str, [:bright]},
                 "  ",
-                {Path.join(vol2, f2_info.dir), :scr, []},
+                {Path.join(vol2, Path.dirname(fp2)), :scr, []},
                 "\n"
               ]
             end

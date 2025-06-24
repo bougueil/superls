@@ -18,7 +18,7 @@ defmodule Superls.MatchTag do
             " ",
             {Path.basename(fp), {:scr, 60}, [:bright]},
             "  ",
-            {Path.join(".", f_info.dir), :scr, []},
+            {Path.dirname(fp), :scr, []},
             "\n"
           ]
         end

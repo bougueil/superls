@@ -14,15 +14,15 @@ defmodule Superls.MatchJaro do
         {"distance: #{dist}", :str, [:light_magenta, :reverse]},
         {"_", :padl, [:light_magenta]},
         "\n",
-        for {{file1, vol1, fp1}, {file2, vol2, fp2}} <- similar_files do
+        for {{file1, vol1}, {file2, vol2}} <- similar_files do
           [
-            {file1, :str, [:bright]},
+            {Path.basename(file1), :str, [:bright]},
             "  ",
-            {Path.join(vol1, fp1), :scr, []},
+            {Path.join(vol1, Path.dirname(file1)), :scr, []},
             "\n",
-            {file2, :str, [:bright]},
+            {Path.basename(file2), :str, [:bright]},
             "  ",
-            {Path.join(vol2, fp2), :scr, []},
+            {Path.join(vol2, Path.dirname(file2)), :scr, []},
             "\n",
             "\n"
           ]
@@ -69,7 +69,8 @@ defmodule Superls.MatchJaro do
   defp build_f_mapset([], list), do: list
 
   defp build_f_mapset([{fp, fp_info, vol} | rest], acc) do
-    build_f_mapset(rest, [{{fp, vol, fp_info.dir}, MapSet.new(fp_info.tags)} | acc])
+    # build_f_mapset(rest, [{{fp, vol, fp_info.dir}, MapSet.new(fp_info.tags)} | acc])
+    build_f_mapset(rest, [{{fp, vol}, MapSet.new(fp_info.tags)} | acc])
   end
 
   defp jaro_per_file_mapset([], _file_vol, _tags, acc),

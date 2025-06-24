@@ -55,7 +55,7 @@ defmodule Superls.MatchDate do
         " ",
         {Path.basename(fp), {:scr, 60}, [:bright]},
         "  ",
-        {Path.join(vol, f_info.dir), :scr, []},
+        {Path.join(vol, Path.dirname(fp)), :scr, []},
         "\n"
       ]
     end
