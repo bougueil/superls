@@ -1,6 +1,6 @@
 # Changelog for Superls
 
-## v1.2.1  (2025-06-24)
+## v1.2.2  (2025-06-24)
  * tokenize both path and file name
 
  ## v1.2.0  (2025-04-18)
