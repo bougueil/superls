@@ -69,24 +69,34 @@ defmodule Superls.Tag do
       []
     else
       rel_fp = Path.relative_to(fp, media_dir)
+      # CHECK cache rel_fp_split entry
+      [_ | rel_fp_split] = String.split(rel_fp, "/") |> Enum.reverse()
+
+      rel_path_tokens =
+        Enum.reduce(rel_fp_split, [], fn sub_path, acc ->
+          tokenize_path(sub_path) ++ acc
+        end)
+
       file = Path.basename(rel_fp)
 
       try do
         stat = File.stat!(fp, time: :posix)
+        file_tokens = file |> tokenize_path()
 
-        # TODO add tokens from relative dir in addition to file token
-        # in search search for both tokens 
-        # in similarity search for file tokens 
+        # remove token already taken by file_tokens
+        rel_path_tokens = rel_path_tokens -- file_tokens
 
-        file
-        |> String.downcase()
-        |> Accent.normalize()
-        |> extract_tokens()
-        |> Enum.reject(&banned_tag?/1)
+        (file_tokens ++ rel_path_tokens)
+        |> List.flatten()
         |> Enum.map(
           &{&1,
-           {file,
-            %{size: stat.size, mtime: stat.mtime, dir: Path.dirname(rel_fp), atime: stat.atime}}}
+           {rel_fp,
+            %{
+              size: stat.size,
+              mtime: stat.mtime,
+              atime: stat.atime,
+              prefix_tag?: Enum.member?(rel_path_tokens, &1)
+            }}}
         )
       rescue
         err in File.Error ->
@@ -94,6 +104,14 @@ defmodule Superls.Tag do
           []
       end
     end
+  end
+
+  defp tokenize_path(path) do
+    path
+    |> String.downcase()
+    |> Accent.normalize()
+    |> extract_tokens()
+    |> Enum.reject(&banned_tag?/1)
   end
 
   defp index_media_dir_reduce({tag, {file, file_info}}, acc) do

@@ -6,13 +6,11 @@ defmodule Superls.MergedIndex do
            "ACTION" => %{
              "filename1 ACTION" => %{
                size: 0,
-               dir: ".",
                atime: 1_742_806_274,
                mtime: 1_742_806_274
              },
              "filename2 ACTION" => %{
                size: 0,
-               dir: ".",
                atime: 1_742_806_274,
               mtime: 1_742_806_274
              }
@@ -20,7 +18,6 @@ defmodule Superls.MergedIndex do
            "filename1" => %{
              "filename1 ACTION" => %{
               size: 0,
-              dir: ".",
               atime: 1_742_806_274,
               mtime: 1_742_806_274
             }
@@ -28,7 +25,6 @@ defmodule Superls.MergedIndex do
            "filename2" => %{
              "filename2 ACTION" => %{
                size: 0,
-               dir: ".",
                atime: 1_742_806_274,
                mtime: 1_742_806_274
              }
@@ -39,15 +35,13 @@ defmodule Superls.MergedIndex do
            "JAZZ" => %{
              "filename3 JAZZ" => %{
                size: 0,
-               dir: ".",
                atime: 1_742_806_274,
                mtime: 1_742_806_274
             }
           },
            "filename3" => %{
               "filename3 JAZZ" => %{
-                 size: 0,
-                 dir: ".",
+                size: 0,
                 atime: 1_742_806_274,
                 mtime: 1_742_806_274
            }
@@ -82,7 +76,7 @@ defmodule Superls.MergedIndex do
   Returns a map containing best `jaro` distances as a numerical key and their associated matching files.
   """
   def search_duplicated_tags(mi) do
-    files_index_from_tags(mi)
+    files_index_from_tags(mi, false)
     |> flatten_files_vol()
     |> MatchJaro.best_jaro()
   end
@@ -132,13 +126,13 @@ defmodule Superls.MergedIndex do
   """
   @spec flatten_files_vol(files_vol :: list({volume(), %{file_name() => map()}})) ::
           list({file_name(), map()})
-  def flatten_files_vol(files_vol) do
-    files_vol
-    |> Enum.reduce([], fn {vol, files}, acc ->
-      [Enum.map(files, fn {fp, fp_info} -> {fp, fp_info, vol} end) | acc]
-    end)
-    |> List.flatten()
-  end
+  def flatten_files_vol(files_vol),
+    do:
+      files_vol
+      |> Enum.map(fn {vol, files} ->
+        Enum.map(files, fn {fp, fp_info} -> {fp, fp_info, vol} end)
+      end)
+      |> List.flatten()
 
   @doc """
   Count the tags
@@ -195,20 +189,24 @@ defmodule Superls.MergedIndex do
   @doc """
   Returns a list of files referenced by the merged index tags by volume.
   """
-  @spec files_index_from_tags(t()) :: list([{volume(), %{file_name() => map()}}])
-  def files_index_from_tags(mi) when is_list(mi) do
+  @spec files_index_from_tags(t(), boolean()) :: list([{volume(), %{file_name() => map()}}])
+  def files_index_from_tags(mi, prefix_tag? \\ true) when is_list(mi) do
     Enum.map(mi, fn {vol, tags} ->
       {vol,
        Enum.reduce(tags, %{}, fn {tag, files}, acc ->
          Enum.reduce(files, acc, fn {fp, fp_info}, acc2 ->
-           Map.get_and_update(acc2, fp, fn
-             nil ->
-               {nil, Map.put(fp_info, :tags, [tag])}
+           if prefix_tag? or !fp_info.prefix_tag? do
+             Map.get_and_update(acc2, fp, fn
+               nil ->
+                 {nil, Map.put(fp_info, :tags, [tag])}
 
-             %{tags: tag2s} = mm ->
-               {mm, %{mm | tags: [tag | tag2s]}}
-           end)
-           |> elem(1)
+               %{tags: tag2s} = mm ->
+                 {mm, %{mm | tags: [tag | tag2s]}}
+             end)
+             |> elem(1)
+           else
+             acc2
+           end
          end)
        end)}
     end)
