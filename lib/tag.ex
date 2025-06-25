@@ -40,30 +40,6 @@ defmodule Superls.Tag do
     end
   end
 
-  @doc """
-  Search all tags in `merged_index` that match the `search_str`,
-
-  Returns {`matches`, `query_tags`}.
-  """
-  @spec search_matching_tags(merged_index :: MergedIndex.t(), search_str :: String.t()) ::
-          {matches ::
-             list(
-               {MergedIndex.volume(), list({MergedIndex.file_name(), MergedIndex.file_entry()})}
-             ), query_tags :: list(MergedIndex.tag())}
-  def search_matching_tags(merged_index, search_str) when is_binary(search_str) do
-    keywords = to_keywords(search_str)
-
-    {Enum.map(merged_index, fn {vol, tags} ->
-       {
-         vol,
-         keywords
-         |> Enum.reduce(nil, &match_partial(&1, &2, tags))
-         |> MapSet.to_list()
-       }
-     end)
-     |> Enum.reject(fn {_vol, fps} -> fps == [] end), keywords}
-  end
-
   defp index_media_dir_map(fp, media_dir) do
     if banned_ext?(Path.extname(fp)) or File.dir?(fp) do
       []
@@ -136,26 +112,4 @@ defmodule Superls.Tag do
   defp banned_ext?(ext), do: Map.has_key?(@banned_ext, ext)
 
   defp banned_tag?(tag), do: Map.has_key?(@banned_tags, tag)
-
-  defp to_keywords(search_str) do
-    search_str
-    |> String.downcase()
-    |> Accent.normalize()
-    |> extract_tokens()
-    |> Enum.reject(&(String.length(&1) == 1))
-    |> Enum.uniq()
-  end
-
-  defp match_partial(keywd, acc0, tags) do
-    keywd_files =
-      Enum.filter(tags, &String.contains?(elem(&1, 0), keywd))
-      |> Enum.flat_map(&Map.to_list(elem(&1, 1)))
-      |> MapSet.new()
-
-    if acc0 do
-      MapSet.intersection(acc0, keywd_files)
-    else
-      keywd_files
-    end
-  end
 end

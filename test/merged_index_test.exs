@@ -1,7 +1,7 @@
 defmodule Superls.ApiTest do
   use ExUnit.Case
 
-  alias Superls.{Store, Tag, MergedIndex}
+  alias Superls.{Store, MergedIndex}
   # defines default_store
   use Superls
 
@@ -89,7 +89,7 @@ defmodule Superls.ApiTest do
     HelperTest.create_indexes(@volumes)
     # search_res = Api.search_from_store("aaa", default_store())
     search_res =
-      HelperTest.get_merged_index(default_store()) |> Tag.search_matching_tags("aaa") |> elem(0)
+      HelperTest.get_merged_index(default_store()) |> MergedIndex.search_bytag("aaa") |> elem(0)
 
     files = HelperTest.extract_filenames_from_search(search_res)
     assert Enum.member?(files, @f1_bbb)
@@ -102,7 +102,7 @@ defmodule Superls.ApiTest do
 
     search_res =
       HelperTest.get_merged_index(default_store(), "passwd")
-      |> Tag.search_matching_tags("aaa")
+      |> MergedIndex.search_bytag("aaa")
       |> elem(0)
 
     # search_res = Api.search_from_store("aaa", default_store(), "passwd")
@@ -118,7 +118,7 @@ defmodule Superls.ApiTest do
 
     search_res =
       HelperTest.get_merged_index(default_store())
-      |> Tag.search_matching_tags("bbb")
+      |> MergedIndex.search_bytag("bbb")
       |> elem(0)
 
     # search_res = Api.search_from_store("aaa", default_store())
@@ -132,7 +132,7 @@ defmodule Superls.ApiTest do
     HelperTest.create_indexes(@volumes)
 
     search_res =
-      HelperTest.get_merged_index(default_store()) |> Tag.search_matching_tags("aaa") |> elem(0)
+      HelperTest.get_merged_index(default_store()) |> MergedIndex.search_bytag("aaa") |> elem(0)
 
     # search_res = Api.search_from_store("aaa", default_store())
     files = HelperTest.extract_filenames_from_search(search_res)

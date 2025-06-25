@@ -1,10 +1,10 @@
 defmodule Superls.MatchTag do
   use Superls
-  alias Superls.{StrFmt}
+  alias Superls.{StrFmt, Tag}
 
   @moduledoc false
 
-  def size(result), do: Enum.reduce(result, 0, fn {_vol, fps}, acc -> acc + length(fps) end)
+  def size(result), do: Enum.sum_by(result, fn {_vol, fps} -> length(fps) end)
 
   def to_string(vol_fps) when is_list(vol_fps) do
     Enum.map(vol_fps, fn {vol, fps} ->
@@ -25,5 +25,32 @@ defmodule Superls.MatchTag do
       ]
     end)
     |> StrFmt.to_string()
+  end
+
+  def search_matching_tags(vol_files, search_tags_string) do
+    keywords = to_keywords(search_tags_string)
+
+    {Task.async_stream(
+       vol_files,
+       fn {vol, files} ->
+         {vol,
+          Enum.filter(files, fn {_file, file_info} ->
+            Enum.all?(keywords, fn keyw ->
+              Enum.any?(file_info.tags, &String.contains?(&1, keyw))
+            end)
+          end)}
+       end,
+       timeout: :infinity
+     )
+     |> Enum.map(fn {:ok, res} -> res end), keywords}
+  end
+
+  defp to_keywords(search_str) do
+    search_str
+    |> String.downcase()
+    |> Accent.normalize()
+    |> Tag.extract_tokens()
+    |> Enum.reject(&(String.length(&1) == 1))
+    |> Enum.uniq()
   end
 end

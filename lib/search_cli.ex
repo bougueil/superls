@@ -6,7 +6,6 @@ defmodule Superls.SearchCLI do
     MatchDate,
     MatchTag,
     Prompt,
-    Tag,
     Store,
     MergedIndex,
     StrFmt
@@ -172,10 +171,10 @@ defmodule Superls.SearchCLI do
   end
 
   defp command(mi, user_input, _opts) when byte_size(user_input) > 1 do
-    {result, user_tags} = Tag.search_matching_tags(mi, user_input)
+    {result, user_tags} = MergedIndex.search_bytag(mi, user_input)
 
     user_tags =
-      user_tags |> Enum.map(&{&1, :str, [:bright]}) |> Enum.intersperse(" * ") |> StrFmt.puts()
+      Enum.map(user_tags, &{&1, :str, [:bright]}) |> Enum.intersperse(" * ") |> StrFmt.to_string()
 
     IO.puts([
       MatchTag.to_string(result),

@@ -57,7 +57,7 @@ defmodule Superls.MergedIndex do
   This merged index is stored encrypted or not on the local filesystem.
 
   """
-  alias Superls.{MatchJaro, MatchSize, MatchDate}
+  alias Superls.{MatchJaro, MatchSize, MatchDate, MatchTag}
 
   @type file_entry() :: %{size: integer(), atime: integer(), mtime: integer()}
   @type file_name() :: Path.t()
@@ -119,6 +119,17 @@ defmodule Superls.MergedIndex do
     files_index_from_tags(mi)
     |> flatten_files_vol()
     |> MatchDate.search_bydate(cmd, date, ndays)
+  end
+
+  @doc """
+  Returns a list of files sorted by the oldness `cmd` from the date `date` and limited in size by `ndays`.
+        iex> mi |> MergedIndex.search_bydate("xo", "10.03.31", 50)
+        [..]
+  """
+  @spec search_bytag(t(), tags_string :: String.t()) :: term()
+  def search_bytag(mi, tags_string) do
+    files_index_from_tags(mi)
+    |> MatchTag.search_matching_tags(tags_string)
   end
 
   @doc """
