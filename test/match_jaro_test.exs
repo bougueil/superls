@@ -50,7 +50,7 @@ defmodule Superls.MatchJaroTest do
       with_io(fn ->
         HelperTest.get_merged_index(default_store())
         |> MergedIndex.search_duplicated_tags()
-        |> Superls.MatchJaro.to_string()
+        |> Superls.MatchJaro.format()
       end)
 
     assert true == String.contains?("#{result}", "distance: 1.0")

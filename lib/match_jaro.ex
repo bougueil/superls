@@ -8,7 +8,7 @@ defmodule Superls.MatchJaro do
   @jaro_threshold Application.compile_env!(:superls, :jaro_threshold)
   def size(result), do: map_size(result)
 
-  def to_string(result) do
+  def format(result) do
     for {dist, similar_files} <- result do
       [
         {"distance: #{dist}", :str, [:light_magenta, :reverse]},
@@ -32,8 +32,8 @@ defmodule Superls.MatchJaro do
     end
   end
 
-  @spec best_jaro([tuple()]) :: %{float() => [{tuple(), tuple()}]}
-  def best_jaro(files) do
+  @spec compute([tuple()]) :: %{float() => [{tuple(), tuple()}]}
+  def compute(files) do
     {len, files} =
       files
       |> build_f_mapset([])

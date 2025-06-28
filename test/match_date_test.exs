@@ -63,7 +63,7 @@ defmodule Superls.MatchDateTest do
         with_io(fn ->
           HelperTest.get_merged_index(default_store())
           |> MergedIndex.search_bydate(search_type, Date.utc_today(), 1)
-          |> MatchDate.to_string(search_type)
+          |> MatchDate.format(search_type)
         end)
 
       assert 7 == String.split(result, "\n", trim: true) |> length()

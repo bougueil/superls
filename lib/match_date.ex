@@ -44,7 +44,7 @@ defmodule Superls.MatchDate do
   end
 
   @doc false
-  def to_string(result, cmd) do
+  def format(result, cmd) do
     {_, field} = sorter_field(cmd)
 
     for {fp, f_info, vol} <- result do

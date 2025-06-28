@@ -66,7 +66,7 @@ defmodule Superls.MatchSizeTest do
       with_io(fn ->
         HelperTest.get_merged_index(default_store())
         |> MergedIndex.search_similar_size()
-        |> Superls.MatchSize.to_string()
+        |> Superls.MatchSize.format()
         |> IO.puts()
       end)
 

@@ -94,7 +94,7 @@ defmodule Superls.SearchCLI do
 
     result = MergedIndex.search_bydate(mi, cmd, date, ndays)
 
-    [MatchDate.to_string(result, cmd), "[CLI found #{MatchDate.size(result)} result(s)]"]
+    [MatchDate.format(result, cmd), "[CLI found #{MatchDate.size(result)} result(s)]"]
     |> IO.puts()
   end
 
@@ -108,7 +108,7 @@ defmodule Superls.SearchCLI do
 
     result = MergedIndex.search_oldness(mi, cmd, nentries)
 
-    [MatchDate.to_string(result, cmd), "[CLI found #{MatchDate.size(result)} result(s)]"]
+    [MatchDate.format(result, cmd), "[CLI found #{MatchDate.size(result)} result(s)]"]
     |> IO.puts()
   end
 
@@ -118,7 +118,7 @@ defmodule Superls.SearchCLI do
     result =
       MergedIndex.search_similar_size(mi)
 
-    [MatchSize.to_string(result), "[CLI found #{MatchSize.size(result)} result(s)]"] |> IO.puts()
+    [MatchSize.format(result), "[CLI found #{MatchSize.size(result)} result(s)]"] |> IO.puts()
   end
 
   defp command(mi, "dt", _opts) do
@@ -126,7 +126,7 @@ defmodule Superls.SearchCLI do
 
     result = MergedIndex.search_duplicated_tags(mi)
 
-    [MatchJaro.to_string(result), "[CLI found #{MatchJaro.size(result)} result(s)]"] |> IO.puts()
+    [MatchJaro.format(result), "[CLI found #{MatchJaro.size(result)} result(s)]"] |> IO.puts()
   end
 
   # @limit_top_tags 500
@@ -177,7 +177,7 @@ defmodule Superls.SearchCLI do
       Enum.map(user_tags, &{&1, :str, [:bright]}) |> Enum.intersperse(" * ") |> StrFmt.to_string()
 
     IO.puts([
-      MatchTag.to_string(result),
+      MatchTag.format(result),
       "[CLI found #{MatchTag.size(result)} result(s) for #{user_tags}]"
     ])
   end

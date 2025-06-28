@@ -6,7 +6,7 @@ defmodule Superls.MatchTag do
 
   def size(result), do: Enum.sum_by(result, fn {_vol, fps} -> length(fps) end)
 
-  def to_string(vol_fps) when is_list(vol_fps) do
+  def format(vol_fps) when is_list(vol_fps) do
     Enum.map(vol_fps, fn {vol, fps} ->
       [
         {"#{vol} (#{length(fps)} entries)", :str, [:light_magenta, :reverse]},
@@ -27,8 +27,8 @@ defmodule Superls.MatchTag do
     |> StrFmt.to_string()
   end
 
-  def search_matching_tags(vol_files, search_tags_string) do
-    keywords = to_keywords(search_tags_string)
+  def compute(vol_files, search: tags_string) do
+    keywords = to_keywords(tags_string)
 
     {Task.async_stream(
        vol_files,

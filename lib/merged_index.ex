@@ -78,7 +78,7 @@ defmodule Superls.MergedIndex do
   def search_duplicated_tags(mi) do
     files_index_from_tags(mi, false)
     |> flatten_files_vol()
-    |> MatchJaro.best_jaro()
+    |> MatchJaro.compute()
   end
 
   @doc """
@@ -90,7 +90,7 @@ defmodule Superls.MergedIndex do
   def search_similar_size(mi) do
     files_index_from_tags(mi)
     |> flatten_files_vol()
-    |> MatchSize.best_size()
+    |> MatchSize.compute()
   end
 
   @doc """
@@ -129,7 +129,7 @@ defmodule Superls.MergedIndex do
   @spec search_bytag(t(), tags_string :: String.t()) :: term()
   def search_bytag(mi, tags_string) do
     files_index_from_tags(mi)
-    |> MatchTag.search_matching_tags(tags_string)
+    |> MatchTag.compute(search: tags_string)
   end
 
   @doc """

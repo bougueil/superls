@@ -142,4 +142,18 @@ defmodule Superls.ApiTest do
   test "archive " do
     assert HelperTest.create_indexes(@volumes) == :ok
   end
+
+  test "flatten_files_vol " do
+    HelperTest.create_indexes(@volumes)
+
+    {tag, files, vol} =
+      HelperTest.get_merged_index(default_store())
+      |> Superls.MergedIndex.flatten_files_vol()
+      |> Enum.to_list()
+      |> hd()
+
+    assert is_binary(tag)
+    assert is_map(files)
+    assert Path.type(vol) == :absolute
+  end
 end

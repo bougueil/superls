@@ -9,7 +9,7 @@ defmodule Superls.MatchSize do
 
   def size(result), do: length(result)
 
-  def to_string(duplicates) do
+  def format(duplicates) do
     for {sz, [{fp1, f1_info, vol1} | rest]} <- duplicates,
         do:
           [
@@ -36,7 +36,7 @@ defmodule Superls.MatchSize do
           |> StrFmt.to_string()
   end
 
-  def best_size(files) do
+  def compute(files) do
     {len, files} =
       files
       |> Enum.sort(&(elem(&1, 1).size <= elem(&2, 1).size))
