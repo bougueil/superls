@@ -4,7 +4,7 @@ defmodule Superls.StrFmt do
 
   @moduledoc """
   ```elixir
-  iex> StrFmt.to_string [{12000, :sizeb, [:bright]}]
+  iex> Superls.StrFmt.to_string [{12000, :sizeb, [:bright]}]
   "\e[1m  11.7K\e[0m"
   ```
 
@@ -13,7 +13,7 @@ defmodule Superls.StrFmt do
   ```elixir
   iex> [ [str_fmt1, str_fmt2], 
          str_fmt3
-       ] |> StrFmt.to_string()
+       ] |> Superls.StrFmt.to_string()
   ```
 
   str_fmt_unit                        | output for a 8 columns terminal
