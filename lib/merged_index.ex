@@ -140,10 +140,9 @@ defmodule Superls.MergedIndex do
   def flatten_files_vol(files_vol),
     do:
       files_vol
-      |> Enum.map(fn {vol, files} ->
-        Enum.map(files, fn {fp, fp_info} -> {fp, fp_info, vol} end)
+      |> Enum.flat_map(fn {vol, files} ->
+        Enum.map(files, &:erlang.append_element(&1, vol))
       end)
-      |> List.flatten()
 
   @doc """
   Count the tags

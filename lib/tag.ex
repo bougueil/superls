@@ -45,14 +45,10 @@ defmodule Superls.Tag do
       []
     else
       rel_fp = Path.relative_to(fp, media_dir)
-      # CHECK cache rel_fp_split entry
+      # possibly cache [rel_fp_split => rel_path_tokens]
       [_ | rel_fp_split] = String.split(rel_fp, "/") |> Enum.reverse()
 
-      rel_path_tokens =
-        Enum.reduce(rel_fp_split, [], fn sub_path, acc ->
-          tokenize_path(sub_path) ++ acc
-        end)
-
+      rel_path_tokens = Enum.flat_map(rel_fp_split, &tokenize_path/1)
       file = Path.basename(rel_fp)
 
       try do
