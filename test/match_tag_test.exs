@@ -47,6 +47,16 @@ defmodule Superls.MatchTagTest do
     assert 2 == length(search_result)
   end
 
+  test "search invalid search string" do
+    tags_string = " q"
+
+    {search_result, _tags} =
+      HelperTest.get_merged_index(default_store())
+      |> MergedIndex.search_bytag(tags_string)
+
+    assert 0 == MatchTag.size(search_result)
+  end
+
   test "search_matching_1_tag_in_fname" do
     tags_string = "file3"
 
