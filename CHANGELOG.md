@@ -1,5 +1,10 @@
 # Changelog for Superls
 
+## v1.2.3  (2025-07-05)
+ * streamline the search modules names
+ * fix a corner case bug in cmdline
+ * add more tests
+
 ## v1.2.2  (2025-06-24)
  * tokenize both path and file name
 
