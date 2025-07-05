@@ -17,11 +17,11 @@ defmodule Superls.SearchCLI do
   @spec command_line(MergedIndex.t(), Keyword.t()) :: no_return()
   def command_line(mi, opts) do
     IO.write("""
-    Enter a string to search a tag in store '#{Keyword.fetch!(opts, :store)}' (#{MergedIndex.get_num_tags(mi)} tags) or use the commands:
+    Enter a string of tags to search in store `#{Keyword.fetch!(opts, :store)}` (#{MergedIndex.get_num_tags(mi)} tags) or use the commands:
       q]uit, dt]upl_tags, ds]upl_size, xo|xn|ro|rn]date_old, xd|rd]bydate, s]ort_tags, m]etrics.
     """)
 
-    cmd = IO.gets("-? ") |> String.trim_trailing()
+    cmd = IO.gets("-? ") |> String.trim_leading() |> String.trim_trailing()
     _ = command(mi, cmd, opts)
     command_line(mi, opts)
   end
@@ -178,7 +178,7 @@ defmodule Superls.SearchCLI do
 
     IO.puts([
       MatchTag.format(result),
-      "[CLI found #{MatchTag.size(result)} result(s) for #{user_tags}]"
+      "[CLI found #{MatchTag.size(result)} result(s) for `#{user_tags}`]"
     ])
   end
 
