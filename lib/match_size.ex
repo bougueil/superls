@@ -71,7 +71,7 @@ defmodule Superls.MatchSize do
 
   def near_sz_files(
         [{file2 = {_fp2, fp2_info, _vol2}, _index} | rest],
-        file = {_fp, fp_info, _vol},
+        {_fp, fp_info, _vol} = file,
         acc
       ) do
     if near_sz?(fp_info.size, fp2_info.size) do
