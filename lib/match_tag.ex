@@ -27,9 +27,16 @@ defmodule Superls.MatchTag do
     |> StrFmt.to_string()
   end
 
-  def compute(vol_files, search: tags_string) do
-    keywords = to_keywords(tags_string)
+  def compute(vol_files, search_tags_string) do
+    to_keywords(search_tags_string)
+    |> do_search_matching_tags(vol_files)
+  end
 
+  defp do_search_matching_tags([] = keywords, vol_files) do
+    {Enum.map(vol_files, fn {vol, _} -> {vol, []} end), keywords}
+  end
+
+  defp do_search_matching_tags(keywords, vol_files) do
     {Task.async_stream(
        vol_files,
        fn {vol, files} ->
