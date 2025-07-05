@@ -129,7 +129,7 @@ defmodule Superls.MergedIndex do
   @spec search_bytag(t(), tags_string :: String.t()) :: term()
   def search_bytag(mi, tags_string) do
     files_index_from_tags(mi)
-    |> MatchTag.compute(search: tags_string)
+    |> MatchTag.compute(tags_string)
   end
 
   @doc """
