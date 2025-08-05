@@ -28,6 +28,7 @@ defmodule Superls.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:pcache, "~> 0.1.0"},
       {:flow, "~> 1.2.4"},
       {:plug_crypto, "~> 2.1"},
       {:benchee, "~> 1.4", only: :test, runtime: false},
