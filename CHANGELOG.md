@@ -1,5 +1,8 @@
 # Changelog for Superls
 
+## v1.2.4  (2025-08-05)
+ * cache parent directory tokens when archiving
+
 ## v1.2.3  (2025-07-05)
  * streamline the search modules names
  * fix a corner case bug in cmdline
