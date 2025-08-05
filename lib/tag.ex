@@ -45,18 +45,14 @@ defmodule Superls.Tag do
       []
     else
       rel_fp = Path.relative_to(fp, media_dir)
-      # possibly cache [rel_fp_split => rel_path_tokens]
-      [_ | rel_fp_split] = String.split(rel_fp, "/") |> Enum.reverse()
 
-      rel_path_tokens = Enum.flat_map(rel_fp_split, &tokenize_path/1)
-      file = Path.basename(rel_fp)
+      [_ | rel_fp_split] = Path.split(rel_fp) |> Enum.reverse()
+
+      rel_path_tokens = Pcache.get!(rel_fp_split, fn k -> Enum.flat_map(k, &tokenize_path/1) end)
 
       try do
         stat = File.stat!(fp, time: :posix)
-        file_tokens = file |> tokenize_path()
-
-        # remove token already taken by file_tokens
-        rel_path_tokens = rel_path_tokens -- file_tokens
+        file_tokens = rel_fp |> Path.basename() |> tokenize_path()
 
         (file_tokens ++ rel_path_tokens)
         |> List.flatten()
