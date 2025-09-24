@@ -6,7 +6,7 @@ defmodule Superls.MixProject do
     [
       app: :superls,
       version: @version,
-      elixir: "~> 1.15-dev",
+      elixir: "~> 1.18.4",
       package: package(),
       description: "A files indexer and search engine elixir CLI.",
       start_permanent: Mix.env() == :prod,
