@@ -1,15 +1,16 @@
 defmodule Superls.MixProject do
   use Mix.Project
 
-  @version "1.2.4"
+  @version "1.3.0"
   def project do
     [
       app: :superls,
       version: @version,
-      elixir: "~> 1.18.4",
+      elixir: "~> 1.18",
       package: package(),
       description: "A files indexer and search engine elixir CLI.",
       start_permanent: Mix.env() == :prod,
+      aliases: aliases(),
       escript: [main_module: Superls.CLI],
       deps: deps(),
       docs: [
@@ -36,6 +37,18 @@ defmodule Superls.MixProject do
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:credo_unnecessary_reduce, "~> 0.3.0", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.38", only: :docs}
+    ]
+  end
+
+  defp aliases do
+    [
+      precommit: [
+        "compile --warning-as-errors",
+        "deps.unlock --unused",
+        "format",
+        "test",
+        "credo"
+      ]
     ]
   end
 

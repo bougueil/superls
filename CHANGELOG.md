@@ -1,5 +1,8 @@
 # Changelog for Superls
 
+## v1.3.0  (2025-09-25)
+ * rely on otp-28 interactive shell with autocompletion and history
+
 ## v1.2.4  (2025-08-05)
  * cache parent directory tokens when archiving
 
