@@ -15,7 +15,7 @@ defmodule Superls do
     def gets(_msg, default), do: default
   else
     def puts(msg), do: IO.puts(msg)
-    def gets(msg, _default), do: IO.gets(msg)
+    def gets(msg, _default), do: IO.gets(msg) |> to_string()
   end
 
   @doc false
