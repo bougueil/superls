@@ -32,9 +32,13 @@ defmodule Superls.CLI do
   end
 
   defp main_args(["search"], store_name_or_path, password) do
-    store_name_or_path
-    |> Store.get_merged_index_from_store(password)
-    |> SearchCLI.command_line(store: store_name_or_path, passwd: password)
+    mi = Store.get_merged_index_from_store(store_name_or_path, password)
+
+    :shell.start_interactive(
+      {SearchCLI, :start, [mi, [store: store_name_or_path, passwd: password]]}
+    )
+
+    :timer.sleep(:infinity)
   rescue
     _e in File.Error ->
       default = default_store()

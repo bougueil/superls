@@ -14,16 +14,47 @@ defmodule Superls.SearchCLI do
   @num_files_search_oldness Application.compile_env!(:superls, :num_files_search_oldness)
   @num_days_search_bydate Application.compile_env!(:superls, :num_days_search_bydate)
 
-  @spec command_line(MergedIndex.t(), Keyword.t()) :: no_return()
-  def command_line(mi, opts) do
+  @spec start(MergedIndex.t(), Keyword.t()) :: no_return()
+  def start(mi, opts) do
+    spawn(fn ->
+      :io.setopts(expand_fun: &expand_fun/1)
+      loop(mi, opts)
+    end)
+  end
+
+  @search_cmds ~w(ds dt m rd rn ro s xd xn xo)c
+
+  # If line is empty, we list all available commands
+  defp expand_fun(~c""), do: {:yes, ~c"", @search_cmds}
+  defp expand_fun(curr), do: expand_fun(:lists.reverse(curr), @search_cmds)
+
+  defp expand_fun(_curr, []), do: {:no, ~c"", []}
+
+  defp expand_fun(curr, [cmd | t]) do
+    if List.starts_with?(cmd, curr) do
+      # If curr is a prefix of cmd we subtract Curr from Cmd to get the
+      # characters we need to complete with.
+      {:yes, Enum.reverse(Enum.reverse(cmd) -- Enum.reverse(curr)), []}
+    else
+      expand_fun(curr, t)
+    end
+  end
+
+  defp loop(mi, opts) do
     IO.write("""
-    Enter a string of tags to search in store `#{Keyword.fetch!(opts, :store)}` (#{MergedIndex.get_num_tags(mi)} tags) or use the commands:
-      q]uit, dt]upl_tags, ds]upl_size, xo|xn|ro|rn]date_old, xd|rd]bydate, s]ort_tags, m]etrics.
+    Search files in #{MergedIndex.get_num_tags(mi)}-tags store `#{Keyword.fetch!(opts, :store)}` with a command or tags like angel.1937.
+    Commands: q]uit, dt]upl_tags, ds]upl_size, xo|xn|ro|rn]date_old, xd|rd]bydate, s]ort_tags, m]etrics
     """)
 
-    cmd = IO.gets("-? ") |> String.trim_leading() |> String.trim_trailing()
-    _ = command(mi, cmd, opts)
-    command_line(mi, opts)
+    res =
+      case :io.get_line(~c"> ") do
+        :eof -> :ok
+        {:error, reason} -> exit(reason)
+        data -> command(mi, data |> to_string() |> String.trim(), opts)
+      end
+
+    if res == :abort, do: System.halt()
+    loop(mi, opts)
   end
 
   defp command(_merged_index, "", _opts),
@@ -31,7 +62,7 @@ defmodule Superls.SearchCLI do
 
   defp command(_merged_index, "q", _opts) do
     IO.puts("CLI exits.")
-    exit(:normal)
+    :abort
   end
 
   # metrics command
