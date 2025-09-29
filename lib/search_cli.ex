@@ -42,24 +42,34 @@ defmodule Superls.SearchCLI do
   end
 
   defp loop(mi, opts) do
-    IO.write("""
-    Search files in #{MergedIndex.get_num_tags(mi)}-tags store `#{Keyword.fetch!(opts, :store)}` with a command or tags like angel.1937.
-    Commands: q]uit, dt]upl_tags, ds]upl_size, xo|xn|ro|rn]date_old, xd|rd]bydate, s]ort_tags, m]etrics
-    """)
+    StrFmt.to_string([
+      "Search files in #{MergedIndex.get_num_tags(mi)}-tags store ",
+      {"#{Keyword.fetch!(opts, :store)}", :str, [:bright]},
+      " with a ",
+      {"command", :str, [:italic]},
+      " or tags like ",
+      {"angel.1937\n", :str, [:italic]},
+      "command: q]uit, dt]upl_tags, ds]upl_size, xo|xn|ro|rn]date_old, xd|rd]bydate, s]ort_tags, m]etrics\n",
+      "> "
+    ])
+    |> IO.write()
 
-    res =
-      case :io.get_line(~c"> ") do
-        :eof -> :ok
-        {:error, reason} -> exit(reason)
-        data -> command(mi, data |> to_string() |> String.trim(), opts)
-      end
+    case IO.read(:line) do
+      :eof ->
+        :ok
 
-    if res == :abort, do: System.halt()
+      {:error, reason} ->
+        exit(reason)
+
+      data ->
+        command(mi, data |> to_string() |> String.trim(), opts)
+    end
+    |> tap(fn read -> read == :abort && System.halt() end)
+
     loop(mi, opts)
   end
 
-  defp command(_merged_index, "", _opts),
-    do: :ok
+  defp command(_merged_index, "", _opts), do: :ok
 
   defp command(_merged_index, "q", _opts) do
     IO.puts("CLI exits.")
