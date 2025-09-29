@@ -13,6 +13,7 @@ defmodule Superls.SearchCLI do
 
   @num_files_search_oldness Application.compile_env!(:superls, :num_files_search_oldness)
   @num_days_search_bydate Application.compile_env!(:superls, :num_days_search_bydate)
+  @superl_filenames "/tmp/superl_filenames"
 
   @spec start(MergedIndex.t(), Keyword.t()) :: no_return()
   def start(mi, opts) do
@@ -94,15 +95,15 @@ defmodule Superls.SearchCLI do
     """)
 
     if !Superls.Prompt.valid_default_no?("dump files names") do
-      File.write!("/tmp/dump_superls", "")
+      File.write!(@superl_filenames, "")
 
       MergedIndex.files_index_from_tags(mi)
       |> Enum.each(fn {vol, files} ->
-        File.write!("/tmp/dump_superls", "* Volume: #{vol}:\n", [:append])
+        File.write!(@superl_filenames, "\n* Volume: #{vol}:\n\n", [:append])
         dump_files(files)
       end)
 
-      IO.puts("files names stored in /tmp/dump_superls")
+      IO.puts("files names stored in #{@superl_filenames}.\n")
     end
   end
 
@@ -213,17 +214,18 @@ defmodule Superls.SearchCLI do
     ])
   end
 
-  defp command(_merged_index, user_input, _opts) do
-    IO.puts("Unrecognized command: \"#{user_input}\"")
-  end
+  defp command(_merged_index, user_input, _opts),
+    do: IO.puts("Unrecognized command: \"#{user_input}\"")
 
   defp dump_files(files) do
-    for {fp, finfo} <- files,
-        do:
-          File.write!(
-            "/tmp/dump_superls",
-            StrFmt.to_string([{finfo.size, :sizeb, []}, " ", {fp, :str, []}, "\n"]),
-            [:append]
-          )
+    files
+    |> Enum.sort(fn {fp1, _}, {fp2, _} -> String.downcase(fp1) < String.downcase(fp2) end)
+    |> Enum.each(fn {fp, finfo} ->
+      File.write!(
+        @superl_filenames,
+        StrFmt.to_string([{finfo.size, :sizeb, []}, " ", {fp, :str, []}, "\n"]),
+        [:append]
+      )
+    end)
   end
 end
