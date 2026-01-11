@@ -6,7 +6,7 @@ defmodule Superls.MatchTag do
 
   def size(result), do: Enum.sum_by(result, fn {_vol, fps} -> length(fps) end)
 
-  def format(vol_fps) when is_list(vol_fps) do
+  def format_files(vol_fps) when is_list(vol_fps) do
     Enum.map(vol_fps, fn
       {_vol, []} ->
         []
@@ -23,6 +23,29 @@ defmodule Superls.MatchTag do
               {Path.basename(fp), {:scr, 60}, [:bright]},
               "  ",
               {Path.dirname(fp), :scr, []},
+              "\n"
+            ]
+          end
+        ]
+    end)
+    |> StrFmt.to_string()
+  end
+
+  def format_tags(vol_fps, exclude_tags) when is_list(vol_fps) do
+    Enum.map(vol_fps, fn
+      {_vol, []} ->
+        []
+
+      {vol, fps} ->
+        [
+          {"#{vol} (#{length(fps)} entries)", :str, [:light_magenta, :reverse]},
+          {"_", :padr, [:light_magenta]},
+          "\n",
+          for {_fp, f_info} <- fps do
+            [
+              for tag <- f_info.tags -- exclude_tags do
+                [tag, " "]
+              end,
               "\n"
             ]
           end
