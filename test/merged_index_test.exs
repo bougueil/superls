@@ -87,7 +87,7 @@ defmodule Superls.ApiTest do
 
   test "search aaa from store" do
     HelperTest.create_indexes(@volumes)
-    # search_res = Api.search_from_store("aaa", default_store())
+
     search_res =
       HelperTest.get_merged_index(default_store()) |> MergedIndex.search_bytag("aaa") |> elem(0)
 
@@ -105,7 +105,6 @@ defmodule Superls.ApiTest do
       |> MergedIndex.search_bytag("aaa")
       |> elem(0)
 
-    # search_res = Api.search_from_store("aaa", default_store(), "passwd")
     files = HelperTest.extract_filenames_from_search(search_res)
 
     assert Enum.member?(files, @f1_bbb)
@@ -121,7 +120,6 @@ defmodule Superls.ApiTest do
       |> MergedIndex.search_bytag("bbb")
       |> elem(0)
 
-    # search_res = Api.search_from_store("aaa", default_store())
     files = HelperTest.extract_filenames_from_search(search_res)
 
     assert Enum.member?(files, @f1_bbb)
@@ -134,9 +132,21 @@ defmodule Superls.ApiTest do
     search_res =
       HelperTest.get_merged_index(default_store()) |> MergedIndex.search_bytag("aaa") |> elem(0)
 
-    # search_res = Api.search_from_store("aaa", default_store())
     files = HelperTest.extract_filenames_from_search(search_res)
     assert Enum.member?(files, @f3)
+  end
+
+  test "random tag from store" do
+    HelperTest.create_indexes(@volumes)
+    mi = HelperTest.get_merged_index(default_store())
+    random_tag = Superls.MergedIndex.random_tag(mi)
+
+    files =
+      MergedIndex.search_bytag(mi, random_tag)
+      |> elem(0)
+      |> HelperTest.extract_filenames_from_search()
+
+    assert Enum.all?(files, &String.contains?(String.downcase(&1), random_tag))
   end
 
   test "archive " do

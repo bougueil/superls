@@ -189,6 +189,12 @@ defmodule Superls.MergedIndex do
   end
 
   @doc """
+  Returns a random tag from a merged index.
+  """
+  @spec random_tag(t()) :: tag()
+  def random_tag(mi), do: tags(mi) |> Enum.random()
+
+  @doc """
   Return a map of {`tag` => `count`}.
   """
   @spec tag_freq(t()) :: %{tag() => occurence :: integer()}

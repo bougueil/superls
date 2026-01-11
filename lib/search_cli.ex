@@ -44,12 +44,12 @@ defmodule Superls.SearchCLI do
   defp loop(mi, opts) do
     StrFmt.to_string([
       "Search files in #{MergedIndex.get_num_tags(mi)}-tags store ",
-      {"#{Keyword.fetch!(opts, :store)}", :str, [:bright]},
+      {"`#{Keyword.fetch!(opts, :store)}`", :str, [:bright]},
       " with a ",
       {"command", :str, [:italic]},
       " or tags like ",
       {"angel.1937\n", :str, [:italic]},
-      "command: q]uit, dt]upl_tags, ds]upl_size, xo|xn|ro|rn]date_old, xd|rd]bydate, s]ort_tags, m]etrics\n",
+      "cmds: q]uit, dt]upl_tags, ds]upl_size, xo|xn|ro|rn]date_old, xd|rd]bydate,\n      s]ort_tags, a]ssoc_tags, r]andom_tag, m]etrics\n",
       "> "
     ])
     |> IO.write()
@@ -201,15 +201,46 @@ defmodule Superls.SearchCLI do
         [
           {count, :str, [:light_magenta, :reverse]},
           "  ",
-          for tag <- tags do
-            [{tag, :str, [:bright]}, "  "]
-          end,
+          for(tag <- tags, do: [{tag, :str, [:bright]}, "  "]),
           "\n"
         ]
       end
     ]
     |> StrFmt.to_string()
     |> IO.puts()
+  end
+
+  defp command(mi, "a", _opts) do
+    IO.write("enter tags to associate: ")
+
+    {result, user_tags} =
+      case IO.read(:line) do
+        :eof ->
+          :ok
+
+        {:error, reason} ->
+          exit(reason)
+
+        search_tags_string ->
+          MergedIndex.search_bytag(mi, search_tags_string |> to_string())
+      end
+
+    # IO.puts("result: #{inspect(result)}")
+    # IO.puts("user_tags: #{inspect(user_tags)}")
+
+    user_tags_fmt =
+      Enum.map(user_tags, &{&1, :str, [:bright]}) |> Enum.intersperse(" * ") |> StrFmt.to_string()
+
+    IO.puts([
+      MatchTag.format_tags(result, user_tags),
+      "[CLI found #{MatchTag.size(result)} result(s) for `#{user_tags_fmt}`]"
+    ])
+  end
+
+  defp command(mi, "r", _opts) do
+    tag = MergedIndex.random_tag(mi)
+    IO.puts("Random tag: \"#{tag}\"")
+    command(mi, tag, nil)
   end
 
   defp command(mi, user_input, _opts) when byte_size(user_input) > 1 do
@@ -219,7 +250,7 @@ defmodule Superls.SearchCLI do
       Enum.map(user_tags, &{&1, :str, [:bright]}) |> Enum.intersperse(" * ") |> StrFmt.to_string()
 
     IO.puts([
-      MatchTag.format(result),
+      MatchTag.format_files(result),
       "[CLI found #{MatchTag.size(result)} result(s) for `#{user_tags}`]"
     ])
   end
