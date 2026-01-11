@@ -32,7 +32,7 @@ defmodule Superls.MixProject do
       {:pcache, "~> 0.1.0"},
       {:flow, "~> 1.2.4"},
       {:plug_crypto, "~> 2.1"},
-      {:benchee, "~> 1.4", only: :test, runtime: false},
+      {:benchee, "~> 1.5", only: :test, runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:credo_unnecessary_reduce, "~> 0.3.0", only: [:dev, :test], runtime: false},
@@ -43,7 +43,7 @@ defmodule Superls.MixProject do
   defp aliases do
     [
       precommit: [
-        "compile --warning-as-errors",
+        "compile --warnings-as-errors",
         "deps.unlock --unused",
         "format",
         "test",
