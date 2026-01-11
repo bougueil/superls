@@ -1,6 +1,5 @@
 defmodule StrFmtTest do
   use ExUnit.Case, async: true
-  require Logger
   alias Superls.StrFmt
 
   # ncols string
