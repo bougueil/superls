@@ -17,8 +17,7 @@ defmodule Superls.Store do
 
       digest =
         Tag.index_media_dir(media_dir)
-        |> :erlang.term_to_binary()
-        |> :zlib.gzip()
+        |> :erlang.term_to_binary([:compressed])
         |> Superls.encrypt(passwd)
 
       try do
@@ -79,8 +78,13 @@ defmodule Superls.Store do
   @spec get_merged_index_from_store(store :: store(), String.t()) ::
           merged_index :: MergedIndex.t()
   def get_merged_index_from_store(store, passwd \\ "") do
+    path_file = cache_store_path(store)
+
     list_indexes(store, passwd)
-    |> load_tags(store, passwd)
+    |> Task.async_stream(fn {{digest, _date, _sz}, vol_path} ->
+      {vol_path, load_digest("#{path_file}/#{digest}", passwd)[:tokens]}
+    end)
+    |> Enum.map(fn {:ok, res} -> res end)
   end
 
   @doc "Get the `indexes` list from `store` and `password`."
@@ -112,14 +116,6 @@ defmodule Superls.Store do
   @doc "Get the `stores` list."
   @spec list_stores() :: stores :: [Path.t()]
   def list_stores, do: File.ls!(cache_path())
-
-  defp load_tags(digests, store, passwd) when is_list(digests) do
-    path_file = cache_store_path(store)
-
-    Enum.map(digests, fn {{digest, _date, _sz}, vol_path} ->
-      {vol_path, load_digest("#{path_file}/#{digest}", passwd)[:tokens]}
-    end)
-  end
 
   defp do_maybe_create_dir(true, _store, store_path),
     do: store_path
@@ -181,7 +177,6 @@ defmodule Superls.Store do
         File.read!(enc32_path)
         |> Superls.decrypt(passwd)
         |> elem(1)
-        |> :zlib.gunzip()
         |> :erlang.binary_to_term()
     ]
   end
