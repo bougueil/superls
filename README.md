@@ -11,15 +11,15 @@ A multi volumes files indexer and search engine CLI (elixir, Linux).
 
   Stores are saved compressed and optionally password encrypted.
 
-  The following command creates an index of /path/to/my/files in the `default` store :
+  The following command creates an index of /path/to/my/volume_files in the `default` store :
 
 ```bash
-superls archive /path/to/my/files
+superls archive /path/to/my/volume_files
 ```
 or on store `mystore` with stdin password encryption :
 
 ```bash
-superls archive /path/to/my/files -s mystore -p
+superls archive /path/to/my/volume_files -s mystore -p
 ```
 
 ### Search
