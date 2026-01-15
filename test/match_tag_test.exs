@@ -41,7 +41,7 @@ defmodule Superls.MatchTagTest do
     tags_string = "zQveN"
 
     {search_result, _tags} =
-      HelperTest.get_merged_index(default_store())
+      HelperTest.get_merged_index()
       |> MergedIndex.search_bytag(tags_string)
 
     assert 2 == length(search_result)
@@ -51,7 +51,7 @@ defmodule Superls.MatchTagTest do
     tags_string = " q"
 
     {search_result, _tags} =
-      HelperTest.get_merged_index(default_store())
+      HelperTest.get_merged_index()
       |> MergedIndex.search_bytag(tags_string)
 
     assert 0 == MatchTag.size(search_result)
@@ -61,7 +61,7 @@ defmodule Superls.MatchTagTest do
     tags_string = "file3"
 
     {search_result, _tags} =
-      HelperTest.get_merged_index(default_store())
+      HelperTest.get_merged_index()
       |> MergedIndex.search_bytag(tags_string)
 
     assert 3 == MatchTag.size(search_result)
@@ -71,7 +71,7 @@ defmodule Superls.MatchTagTest do
     tags_string = "file3  eee"
 
     {search_result, _tags} =
-      HelperTest.get_merged_index(default_store())
+      HelperTest.get_merged_index()
       |> MergedIndex.search_bytag(tags_string)
 
     assert 3 == MatchTag.size(search_result)
@@ -81,7 +81,7 @@ defmodule Superls.MatchTagTest do
     tags_string = "file3  eef"
 
     {search_result, _tags} =
-      HelperTest.get_merged_index(default_store())
+      HelperTest.get_merged_index()
       |> MergedIndex.search_bytag(tags_string)
 
     assert 0 == MatchTag.size(search_result)
@@ -91,7 +91,7 @@ defmodule Superls.MatchTagTest do
     tags_string = "home_pix"
 
     {search_result, _tags} =
-      HelperTest.get_merged_index(default_store())
+      HelperTest.get_merged_index()
       |> MergedIndex.search_bytag(tags_string)
 
     assert 2 == MatchTag.size(search_result)
@@ -101,7 +101,7 @@ defmodule Superls.MatchTagTest do
     tags_string = "home_pix file3"
 
     {search_result, _tags} =
-      HelperTest.get_merged_index(default_store())
+      HelperTest.get_merged_index()
       |> MergedIndex.search_bytag(tags_string)
 
     assert 2 == MatchTag.size(search_result)
@@ -112,7 +112,7 @@ defmodule Superls.MatchTagTest do
 
     {result, ""} =
       with_io(fn ->
-        HelperTest.get_merged_index(default_store())
+        HelperTest.get_merged_index()
         |> MergedIndex.search_bytag(tags_string)
         |> elem(0)
         |> MatchTag.format_files()

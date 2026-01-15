@@ -54,7 +54,7 @@ defmodule Superls.MatchSizeTest do
 
   test "match size" do
     duplicates =
-      HelperTest.get_merged_index(default_store())
+      HelperTest.get_merged_index()
       |> MergedIndex.search_similar_size()
 
     assert MatchSize.size(duplicates) == 1
@@ -64,7 +64,7 @@ defmodule Superls.MatchSizeTest do
   test "pretty_print" do
     {_result, output} =
       with_io(fn ->
-        HelperTest.get_merged_index(default_store())
+        HelperTest.get_merged_index()
         |> MergedIndex.search_similar_size()
         |> Superls.MatchSize.format()
         |> IO.puts()

@@ -1,4 +1,4 @@
-defmodule Superls.ApiTest do
+defmodule Superls.MergedIndexTest do
   use ExUnit.Case
 
   alias Superls.{Store, MergedIndex}
@@ -8,7 +8,7 @@ defmodule Superls.ApiTest do
   @root_dir Application.compile_env!(:superls, :stores_path) |> Path.dirname()
 
   # this test uses 2 volumes_paths containing 3 files
-  volumes_paths = for e <- ["vol1", "vol2"], do: Path.join(@root_dir, e)
+  volumes_paths = for vol <- ["vol1", "vol2"], do: Path.join(@root_dir, vol)
   @volumes Enum.zip(Enum.map(volumes_paths, &Store.encode_digest_uri/1), volumes_paths)
 
   @f1_bbb "file1.2022.FRENCH.aaa.bbb.ccc.ogv"
@@ -43,15 +43,14 @@ defmodule Superls.ApiTest do
 
   test "list indexes with wrong password" do
     HelperTest.create_indexes(@volumes, "passwd")
-    list = Store.list_indexes(default_store(), "passwd2")
-
+    list = Store.list_indexes(default_store(), "")
     assert length(list) == 2
     assert Enum.all?(list, fn {_, path} -> String.contains?(path, "bad") end)
   end
 
   test "inspect_store without password" do
     HelperTest.create_indexes(@volumes)
-    mi = HelperTest.get_merged_index(default_store())
+    mi = HelperTest.get_merged_index()
 
     result = MergedIndex.metrics(mi)
     assert result.num_files == 5
@@ -62,7 +61,7 @@ defmodule Superls.ApiTest do
 
   test "inspect_store with password" do
     HelperTest.create_indexes(@volumes, "passwd")
-    mi = HelperTest.get_merged_index(default_store(), "passwd")
+    mi = HelperTest.get_merged_index("passwd")
 
     result = MergedIndex.metrics(mi)
     assert result.num_files == 5
@@ -75,21 +74,17 @@ defmodule Superls.ApiTest do
     HelperTest.create_indexes(@volumes, "passwd")
 
     result =
-      try do
-        HelperTest.get_merged_index(default_store(), "passwd2")
-        |> MergedIndex.metrics()
-      rescue
-        _ -> nil
-      end
+      HelperTest.get_merged_index("")
+      |> MergedIndex.metrics()
 
-    assert result == nil
+    assert result.tags == [:error]
   end
 
   test "search aaa from store" do
     HelperTest.create_indexes(@volumes)
 
     search_res =
-      HelperTest.get_merged_index(default_store()) |> MergedIndex.search_bytag("aaa") |> elem(0)
+      HelperTest.get_merged_index() |> MergedIndex.search_bytag("aaa") |> elem(0)
 
     files = HelperTest.extract_filenames_from_search(search_res)
     assert Enum.member?(files, @f1_bbb)
@@ -101,7 +96,7 @@ defmodule Superls.ApiTest do
     HelperTest.create_indexes(@volumes, "passwd")
 
     search_res =
-      HelperTest.get_merged_index(default_store(), "passwd")
+      HelperTest.get_merged_index("passwd")
       |> MergedIndex.search_bytag("aaa")
       |> elem(0)
 
@@ -116,7 +111,7 @@ defmodule Superls.ApiTest do
     HelperTest.create_indexes(@volumes)
 
     search_res =
-      HelperTest.get_merged_index(default_store())
+      HelperTest.get_merged_index()
       |> MergedIndex.search_bytag("bbb")
       |> elem(0)
 
@@ -130,7 +125,7 @@ defmodule Superls.ApiTest do
     HelperTest.create_indexes(@volumes)
 
     search_res =
-      HelperTest.get_merged_index(default_store()) |> MergedIndex.search_bytag("aaa") |> elem(0)
+      HelperTest.get_merged_index() |> MergedIndex.search_bytag("aaa") |> elem(0)
 
     files = HelperTest.extract_filenames_from_search(search_res)
     assert Enum.member?(files, @f3)
@@ -138,7 +133,7 @@ defmodule Superls.ApiTest do
 
   test "random tag from store" do
     HelperTest.create_indexes(@volumes)
-    mi = HelperTest.get_merged_index(default_store())
+    mi = HelperTest.get_merged_index()
     random_tag = Superls.MergedIndex.random_tag(mi)
 
     files =
@@ -157,7 +152,7 @@ defmodule Superls.ApiTest do
     HelperTest.create_indexes(@volumes)
 
     {tag, files, vol} =
-      HelperTest.get_merged_index(default_store())
+      HelperTest.get_merged_index()
       |> Superls.MergedIndex.flatten_files_vol()
       |> Enum.to_list()
       |> hd()

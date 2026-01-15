@@ -38,7 +38,7 @@ defmodule Superls.MatchDateTest do
   end
 
   test "match date oldness xo-xn-rn-ro" do
-    mi = HelperTest.get_merged_index(default_store())
+    mi = HelperTest.get_merged_index()
 
     for search_type <- ~w(xo ro xn rn) do
       {result, _} = with_io(fn -> MergedIndex.search_oldness(mi, search_type, 10) end)
@@ -47,7 +47,7 @@ defmodule Superls.MatchDateTest do
   end
 
   test "match bydate  xd-rd" do
-    mi = HelperTest.get_merged_index(default_store())
+    mi = HelperTest.get_merged_index()
 
     for search_type <- ~w(xd rd) do
       result =
@@ -61,7 +61,7 @@ defmodule Superls.MatchDateTest do
     for search_type <- ~w(xd rd) do
       {result, _output} =
         with_io(fn ->
-          HelperTest.get_merged_index(default_store())
+          HelperTest.get_merged_index()
           |> MergedIndex.search_bydate(search_type, Date.utc_today(), 1)
           |> MatchDate.format(search_type)
         end)

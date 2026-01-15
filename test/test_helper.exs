@@ -25,8 +25,8 @@ defmodule HelperTest do
   def empty_store,
     do: File.rm_rf(@root_dir)
 
-  def get_merged_index(store_name, password \\ ""),
-    do: Store.get_merged_index_from_store(store_name, password)
+  def get_merged_index(password \\ ""),
+    do: Store.get_merged_index_from_store(default_store(), password)
 
   def extract_filenames_from_search(search_result) do
     search_result

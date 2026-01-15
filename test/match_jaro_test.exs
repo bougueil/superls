@@ -39,7 +39,7 @@ defmodule Superls.MatchJaroTest do
 
   test "jaro" do
     duplicates =
-      HelperTest.get_merged_index(default_store())
+      HelperTest.get_merged_index()
       |> MergedIndex.search_duplicated_tags()
 
     assert Map.keys(duplicates) |> Enum.member?(1.0)
@@ -48,7 +48,7 @@ defmodule Superls.MatchJaroTest do
   test "pretty_print" do
     {result, _output} =
       with_io(fn ->
-        HelperTest.get_merged_index(default_store())
+        HelperTest.get_merged_index()
         |> MergedIndex.search_duplicated_tags()
         |> Superls.MatchJaro.format()
       end)
