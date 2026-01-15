@@ -74,16 +74,28 @@ defmodule Superls.Store do
     end
   end
 
-  @doc "get `merged_index` from `store`."
-  @spec get_merged_index_from_store(store :: store(), String.t()) ::
-          merged_index :: MergedIndex.t()
+  @doc """
+    get the `merged_index` from `store` and `passwd` or returns an error: 
+    {:error, :enoent} a digest cannot be found
+    {:error, :invalid_passwd} the password is invalid
+  """
+  @spec get_merged_index_from_store(store :: store(), passwd :: String.t()) ::
+          merged_index :: MergedIndex.t() | {:error, :enoent} | {:error, :invalid_passwd}
+
   def get_merged_index_from_store(store, passwd \\ "") do
     path_file = cache_store_path(store)
 
     list_indexes(store, passwd)
-    |> Task.async_stream(fn {{digest, _date, _sz}, vol_path} ->
-      {vol_path, load_digest("#{path_file}/#{digest}", passwd)[:tokens]}
-    end)
+    |> Task.async_stream(
+      fn
+        {{_digest, _date, _sz}, "** bad password" = vol_path} ->
+          {vol_path, %{error: "invalid_passwd"}}
+
+        {{digest, _date, _sz}, vol_path} ->
+          {vol_path, load_digest("#{path_file}/#{digest}", passwd)[:tokens]}
+      end,
+      ordered: false
+    )
     |> Enum.map(fn {:ok, res} -> res end)
   end
 
@@ -165,19 +177,25 @@ defmodule Superls.Store do
   defp vol_name(_, _), do: "** bad password"
 
   defp decode_index_uri(index_uri) when is_binary(index_uri) do
-    String.split(index_uri, "-")
-    |> hd()
-    |> Base.decode32!()
+    with [encr_path, _] <- String.split(index_uri, "-"),
+         {:ok, path} <- Base.decode32(encr_path) do
+      path
+    else
+      _ -> "** bad password"
+    end
   end
 
-  defp load_digest(enc32_path, passwd) do
-    [
-      path: enc32_path,
-      tokens:
-        File.read!(enc32_path)
-        |> Superls.decrypt(passwd)
-        |> elem(1)
-        |> :erlang.binary_to_term()
-    ]
+  def load_digest(enc32_path, passwd) do
+    with {:ok, data} <- File.read(enc32_path),
+         {:ok, data} <- Superls.decrypt(data, passwd),
+         tokens <- :erlang.binary_to_term(data) do
+      [
+        path: enc32_path,
+        tokens: tokens
+      ]
+    else
+      {:error, :invalid} -> %{error: "invalid_passwd"}
+      {:error, :enoent} -> %{error: "index file not found"}
+    end
   end
 end

@@ -207,37 +207,45 @@ defmodule Superls.MergedIndex do
   """
   @spec files_index_from_tags(t(), boolean()) :: list([{volume(), %{file_name() => map()}}])
   def files_index_from_tags(mi, prefix_tag? \\ true) when is_list(mi) do
-    Enum.map(mi, fn {vol, tags} ->
-      {vol,
-       Enum.reduce(tags, %{}, fn {tag, files}, acc ->
-         Enum.reduce(files, acc, fn {fp, fp_info}, acc2 ->
-           if prefix_tag? or !fp_info.prefix_tag? do
-             Map.get_and_update(acc2, fp, fn
-               nil ->
-                 {nil, Map.put(fp_info, :tags, [tag])}
+    Enum.map(mi, fn
+      {vol, %{error: _}} ->
+        {vol, %{}}
 
-               %{tags: tag2s} = mm ->
-                 {mm, %{mm | tags: [tag | tag2s]}}
-             end)
-             |> elem(1)
-           else
-             acc2
-           end
-         end)
-       end)}
+      {vol, tags} ->
+        {vol,
+         Enum.reduce(tags, %{}, fn {tag, files}, acc ->
+           Enum.reduce(files, acc, fn {fp, fp_info}, acc2 ->
+             if prefix_tag? or !fp_info.prefix_tag? do
+               Map.get_and_update(acc2, fp, fn
+                 nil ->
+                   {nil, Map.put(fp_info, :tags, [tag])}
+
+                 %{tags: tag2s} = mm ->
+                   {mm, %{mm | tags: [tag | tag2s]}}
+               end)
+               |> elem(1)
+             else
+               acc2
+             end
+           end)
+         end)}
     end)
   end
 
   defp tag_occurence({_vol, tags}, acc) do
-    Enum.reduce(tags, acc, fn {tag, files}, acc ->
-      Map.get_and_update(acc, tag, fn
-        nil ->
-          {nil, map_size(files)}
+    Enum.reduce(tags, acc, fn
+      {:error, _}, acc ->
+        acc
 
-        num_tags ->
-          {num_tags, num_tags + map_size(files)}
-      end)
-      |> elem(1)
+      {tag, files}, acc ->
+        Map.get_and_update(acc, tag, fn
+          nil ->
+            {nil, map_size(files)}
+
+          num_tags ->
+            {num_tags, num_tags + map_size(files)}
+        end)
+        |> elem(1)
     end)
   end
 
