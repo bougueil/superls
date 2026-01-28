@@ -43,9 +43,9 @@ defmodule Superls.CLI.Search do
 
   defp loop(mi, opts) do
     StrFmt.to_string([
-      "Search files in #{MergedIndex.get_num_tags(mi)}-tags store ",
+      "Search files in index ",
       {"`#{Keyword.fetch!(opts, :store)}`", :str, [:bright]},
-      " with a ",
+      " (#{MergedIndex.get_num_tags(mi)} tags) with a ",
       {"command", :str, [:italic]},
       " or tags like ",
       {"angel.1937\n", :str, [:italic]},
