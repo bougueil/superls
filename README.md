@@ -7,24 +7,24 @@ A multi volumes files indexer and search engine CLI (elixir, Linux).
 ### Indexing
   `superls` analyzes the filenames of a volume, extracts the filename tags and other file attributes such as size, date and builds an index for the volume.
 
-  Unless a store name is given (-s), all volume indexes are stored in the `default` store folder.
+  Unless an index name is given (-i), all volume indexes are stored in the `default` index folder.
 
-  Stores are saved compressed and optionally password encrypted.
+  Indexes are saved compressed and optionally password encrypted.
 
-  The following command creates an index of /path/to/my/volume_files in the `default` store :
+  The following command creates an index of /path/to/my/volume_files in the `default` index :
 
 ```bash
-superls archive /path/to/my/volume_files
+superls index /path/to/my/volume_files
 ```
-or on store `mystore` with stdin password encryption :
+or on index `myindex` with stdin password encryption :
 
 ```bash
-superls archive /path/to/my/volume_files -s mystore -p
+superls index /path/to/my/volume_files -i myindex -p
 ```
 
 ### Search
 
-The command to search tags in the `default` store with the CLI is :
+The command to search tags with the `default` index with the CLI is :
 
 ```bash
 superls search
@@ -33,7 +33,7 @@ An interactive shell asks for commands like query by a list of tags, a string se
 The result is a list of matched files.
 
 ### Other CLI commands
-  For help, getting stores commands ...  :
+  For help, getting superls commands ...  :
 
 ```bash
 superls

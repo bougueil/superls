@@ -13,7 +13,7 @@ defmodule Superls.CLI do
     _ = Store.maybe_create_cache_path()
 
     with {opts, args, []} <-
-           OptionParser.parse(argv, aliases: [p: :password, s: :store], strict: @options),
+           OptionParser.parse(argv, aliases: [p: :password, i: :store], strict: @options),
          is_password? <- Keyword.get(opts, :password, false),
          password <- if(is_password?, do: Password.io_get(), else: ""),
          store <- Keyword.get(opts, :store, default_store()),
@@ -27,7 +27,7 @@ defmodule Superls.CLI do
     err -> IO.puts("#{err}")
   end
 
-  defp main_args(["archive", media_path], store_name, password) do
+  defp main_args(["index", media_path], store_name, password) do
     Store.archive(media_path, store_name, password)
   end
 
@@ -51,7 +51,7 @@ defmodule Superls.CLI do
 
       IO.puts("""
       ** store `#{store_name_or_path}` is missing.
-      first create it with: superls archive /path/to/myfiles -s #{store} [- p]
+      first create it with: superls index /path/to/my/volume_files -i #{store} [- p]
       """)
   end
 
@@ -59,11 +59,11 @@ defmodule Superls.CLI do
     path = Store.cache_path()
 
     IO.puts("""
-    Usage: superls command [params] [-p -s my_store]
-      -s specifies a store name, no -s defaults to store `default`
+    Usage: superls command [params] [-p -i my_index]
+      -i specifies an index name, no -i defaults to the index `default`
       -p requires to enter a password, no -p defaults to no password 
     Available commands are:
-      archive:\n\t  superls archive /path/to/my/files\n\t  note: links prevent archiving, executes this before archiving: `find /path/to/my/files -type l -ls`
+      index:\n\t  superls index /path/to/my/files\n\t  note: links prevent indexing, executes this before indexing: `find /path/to/my/files -type l -ls`
       search:\n\t  superls search
     Stores:
       #{Enum.intersperse(Store.list_stores(), ", ")}

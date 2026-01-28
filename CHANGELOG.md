@@ -4,6 +4,9 @@
  * CLI: query search for a random tag
  * use native compression for stored indexes (require re-archiving)
  * fix wrong password tests
+ * properly decode stored index
+ * rename the archive command by index
+ * rename flag -s by -i to specify an index
 
 ## v1.3.0  (2025-09-25)
  * rely on otp-28 interactive shell with autocompletion and history
