@@ -1,4 +1,4 @@
-defmodule Superls.SearchCLI do
+defmodule Superls.CLI.Search do
   @moduledoc false
   alias Superls.{
     MatchJaro,

@@ -1,6 +1,6 @@
 defmodule Superls.CLI do
   @moduledoc false
-  alias Superls.{SearchCLI, Store, Password, Store}
+  alias Superls.{CLI.Search, Store, Password, Store}
 
   use Superls
 
@@ -35,7 +35,7 @@ defmodule Superls.CLI do
     mi = Store.get_merged_index_from_store(store_name_or_path, password)
 
     :shell.start_interactive(
-      {SearchCLI, :start, [mi, [store: store_name_or_path, passwd: password]]}
+      {Search, :start, [mi, [store: store_name_or_path, passwd: password]]}
     )
 
     :timer.sleep(:infinity)
