@@ -63,9 +63,13 @@ defmodule Superls.CLI do
       -i specifies an index name, no -i defaults to the index `default`
       -p requires to enter a password, no -p defaults to no password 
     Available commands are:
-      index:\n\t  superls index /path/to/my/files\n\t  note: links prevent indexing, executes this before indexing: `find /path/to/my/files -type l -ls`
-      search:\n\t  superls search
-    Stores:
+      index:
+        superls index /path/to/my/files
+            build an index and save it locally
+            note: links prevent indexing, execute this before indexing: `find /path/to/my/files -type l -ls`
+      search:
+        superls search
+    Saved indexes:
       #{Enum.intersperse(Store.list_stores(), ", ")}
 
     Cache information:
