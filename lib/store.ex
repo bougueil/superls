@@ -11,7 +11,7 @@ defmodule Superls.Store do
     !File.dir?(media_dir) &&
       Superls.halt("error: media_dir: #{media_dir} must point to a directory")
 
-    if Prompt.valid_default_yes?("Do archive in store `#{store_name}` ?") do
+    if Prompt.valid_default_yes?("Update index `#{store_name}` ?") do
       store_cache_path = maybe_create_dir(store_name)
       media_dir = String.trim_trailing(media_dir, "/")
 
@@ -27,7 +27,7 @@ defmodule Superls.Store do
           "#{store_cache_path}/#{Superls.encrypt(encode_digest_uri(media_dir), passwd)}"
 
         :ok = File.write(encoded_path, digest)
-        Superls.puts("\rstore `#{store_name}` updated.")
+        Superls.puts("\rindex `#{store_name}` updated.")
       rescue
         e in ArgumentError ->
           Superls.halt(
@@ -177,7 +177,7 @@ defmodule Superls.Store do
   defp vol_name(_, _), do: "** bad password"
 
   defp decode_index_uri(index_uri) when is_binary(index_uri) do
-    with [encr_path, _] <- String.split(index_uri, "-"),
+    with [encr_path, _] <- String.split(index_uri, "-", parts: 2),
          {:ok, path} <- Base.decode32(encr_path) do
       path
     else
