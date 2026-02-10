@@ -36,7 +36,7 @@ defmodule Superls.MixProject do
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:credo_unnecessary_reduce, "~> 0.3.0", only: [:dev, :test], runtime: false},
-      {:ex_doc, "~> 0.38", only: :docs}
+      {:ex_doc, "~> 0.40", only: :docs}
     ]
   end
 
