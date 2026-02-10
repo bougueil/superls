@@ -43,9 +43,15 @@ defmodule Superls.MergedIndexTest do
 
   test "list indexes with wrong password" do
     HelperTest.create_indexes(@volumes, "passwd")
-    list = Store.list_indexes(default_store(), "")
-    assert length(list) == 2
-    assert Enum.all?(list, fn {_, path} -> String.contains?(path, "bad") end)
+
+    err =
+      try do
+        Store.list_indexes(default_store(), "")
+      catch
+        err -> err
+      end
+
+    assert err == "** bad password"
   end
 
   test "inspect_store without password" do
@@ -73,11 +79,15 @@ defmodule Superls.MergedIndexTest do
   test "inspect_store with wrong password" do
     HelperTest.create_indexes(@volumes, "passwd")
 
-    result =
-      HelperTest.get_merged_index("")
-      |> MergedIndex.metrics()
+    err =
+      try do
+        HelperTest.get_merged_index("")
+        |> MergedIndex.metrics()
+      catch
+        err -> err
+      end
 
-    assert result.tags == [:error]
+    assert err == "** bad password"
   end
 
   test "search aaa from store" do

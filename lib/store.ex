@@ -3,6 +3,7 @@ defmodule Superls.Store do
   use Superls
   @moduledoc "Store access facilities."
   @sep_path "-"
+  @bad_password "** bad password"
 
   @doc "Create a `merged_index` from `media_dir`, `store` and `passwd`."
   @spec archive(media_dir :: MergedIndex.volume(), store :: store(), passwd :: String.t()) ::
@@ -11,7 +12,7 @@ defmodule Superls.Store do
     !File.dir?(media_dir) &&
       Superls.halt("error: media_dir: #{media_dir} must point to a directory")
 
-    if Prompt.valid_default_yes?("Update index `#{store_name}` ?") do
+    if Prompt.valid_default_yes?("Create|Update the `#{store_name}` index ?") do
       store_cache_path = maybe_create_dir(store_name)
       media_dir = String.trim_trailing(media_dir, "/")
 
@@ -83,16 +84,16 @@ defmodule Superls.Store do
           merged_index :: MergedIndex.t() | {:error, :enoent} | {:error, :invalid_passwd}
 
   def get_merged_index_from_store(store, passwd \\ "") do
-    path_file = cache_store_path(store)
+    store_path = cache_store_path(store)
 
     list_indexes(store, passwd)
     |> Task.async_stream(
       fn
-        {{_digest, _date, _sz}, "** bad password" = vol_path} ->
+        {{_digest, _date, _sz}, @bad_password = vol_path} ->
           {vol_path, %{error: "invalid_passwd"}}
 
         {{digest, _date, _sz}, vol_path} ->
-          {vol_path, load_digest("#{path_file}/#{digest}", passwd)[:tokens]}
+          {vol_path, load_digest("#{store_path}/#{digest}", passwd)[:tokens]}
       end,
       ordered: false
     )
@@ -106,14 +107,21 @@ defmodule Superls.Store do
 
     case File.ls(store_path) do
       {:error, :enoent} ->
-        []
+        throw(:enoent)
 
       {:ok, files} ->
-        Enum.map(files, fn fp ->
-          stat = File.stat!(Path.join([store_path, fp]), time: :posix)
-          vol = Superls.decrypt(fp, passwd) |> vol_name(passwd)
-          {{fp, stat.mtime, stat.size}, vol}
-        end)
+        Enum.map(files, &decode_index_name(&1, store_path, passwd))
+    end
+  end
+
+  defp decode_index_name(fp, store_path, passwd) do
+    case Superls.decrypt(fp, passwd) |> vol_name(passwd) do
+      @bad_password ->
+        throw(@bad_password)
+
+      vol ->
+        stat = File.stat!(Path.join([store_path, fp]), time: :posix)
+        {{fp, stat.mtime, stat.size}, vol}
     end
   end
 
@@ -133,7 +141,7 @@ defmodule Superls.Store do
     do: store_path
 
   defp do_maybe_create_dir(false, store, store_path) do
-    Prompt.valid_default_no?("Confirm create a new store `#{store}`") &&
+    Prompt.valid_default_no?("Confirm create a new index `#{store}`") &&
       Superls.halt("User aborts.")
 
     :ok = File.mkdir_p!(store_path)
@@ -174,14 +182,14 @@ defmodule Superls.Store do
 
   defp vol_name({:ok, clear}, _), do: decode_index_uri(clear)
   defp vol_name(_, ""), do: "** need password"
-  defp vol_name(_, _), do: "** bad password"
+  defp vol_name(_, _), do: @bad_password
 
   defp decode_index_uri(index_uri) when is_binary(index_uri) do
     with [encr_path, _] <- String.split(index_uri, "-", parts: 2),
          {:ok, path} <- Base.decode32(encr_path) do
       path
     else
-      _ -> "** bad password"
+      _ -> @bad_password
     end
   end
 
