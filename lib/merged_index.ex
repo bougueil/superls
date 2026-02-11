@@ -66,8 +66,8 @@ defmodule Superls.MergedIndex do
   @type tag() :: String.t()
   @type tags() :: %{tag() => tag_entry()}
   @type volume() :: String.t()
-  @opaque vol_tags() :: {volume(), tags()}
-  @opaque t :: list(vol_tags())
+  @type vol_tags() :: {volume(), tags()}
+  @type t :: list(vol_tags())
 
   @spec search_duplicated_tags(t()) :: %{
           (jaro :: float()) => [{file1 :: tuple(), file2 :: tuple()}]

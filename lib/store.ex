@@ -81,7 +81,7 @@ defmodule Superls.Store do
     {:error, :invalid_passwd} the password is invalid
   """
   @spec get_merged_index_from_store(store :: store(), passwd :: String.t()) ::
-          merged_index :: MergedIndex.t() | {:error, :enoent} | {:error, :invalid_passwd}
+          merged_index :: MergedIndex.t()
 
   def get_merged_index_from_store(store, passwd \\ "") do
     store_path = cache_store_path(store)

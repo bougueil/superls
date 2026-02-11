@@ -18,7 +18,7 @@ defmodule Superls.CLI.Search do
   @spec start(MergedIndex.t(), Keyword.t()) :: no_return()
   def start(mi, opts) do
     spawn(fn ->
-      :io.setopts(expand_fun: &expand_fun/1)
+      :ok = :io.setopts(expand_fun: &expand_fun/1)
       loop(mi, opts)
     end)
   end

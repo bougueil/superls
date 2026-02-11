@@ -49,42 +49,34 @@ defmodule Superls.CLI do
   end
 
   # search
-  defp main_args(store_name_or_path, password) do
-    store_name = store_name(store_name_or_path)
+  defp main_args(args, password) do
+    store_name = store_name(args)
     mi = Store.get_merged_index_from_store(store_name, password)
-
-    :shell.start_interactive({Search, :start, [mi, [store: store_name, passwd: password]]})
+    :ok = :shell.start_interactive({Search, :start, [mi, [store: store_name, passwd: password]]})
 
     :timer.sleep(:infinity)
   rescue
     _e in File.Error ->
-      default = default_store()
+      default_store = default_store()
 
       store =
-        case store_name_or_path do
-          ^default -> ""
+        case store_name(args) do
+          ^default_store -> ""
           any -> any
         end
 
       IO.puts("""
-      ** store `#{store_name_or_path}` is missing.
-      first create it with: superls index /path/to/my/volume_files -i #{store} [- p]
+      ** index `#{store_name(args)}` is missing.
+      first create index with: superls index /path/to/my/volume_files -i #{store} [- p]
       """)
   catch
     :enoent ->
-      IO.puts("** index `#{store_name_or_path}` not found\n\ntry: superls help")
+      IO.puts("** index `#{store_name(args)}` not found\n\ntry: superls help")
 
     err ->
       IO.puts("** #{err}")
-      main_args(store_name_or_path, Password.io_get())
+      main_args(args, Password.io_get())
   end
-
-  # defp main_args(cmd, _passwd) do
-  #   throw(
-  #     "** unknown command `#{Enum.intersperse(cmd, " ")}`\n" <>
-  #       "type: `superls help` for available commands"
-  #   )
-  # end
 
   defp store_name([]), do: default_store()
   defp store_name([str]) when is_binary(str), do: str
