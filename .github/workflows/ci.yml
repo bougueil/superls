@@ -45,4 +45,4 @@ jobs:
 
       - run: mix test
 
-#     - run: mix dialyzer --unmatched_returns
+      - run: mix dialyzer --unmatched_returns
