@@ -24,7 +24,7 @@ defmodule Superls.CLI do
     err -> IO.puts("#{err}")
   end
 
-  defp main_args(["index", vol_path | store], password) do
+  defp main_args(["index", vol_path, store], password) do
     Store.archive(vol_path, store_name(store), password)
   end
 
@@ -48,9 +48,9 @@ defmodule Superls.CLI do
     """)
   end
 
-  # search
-  defp main_args(args, password) do
-    store_name = store_name(args)
+  # search in store
+  defp main_args([store], password) do
+    store_name = store_name(store)
     mi = Store.get_merged_index_from_store(store_name, password)
     :ok = :shell.start_interactive({Search, :start, [mi, [store: store_name, passwd: password]]})
 
@@ -60,24 +60,28 @@ defmodule Superls.CLI do
       default_store = default_store()
 
       store =
-        case store_name(args) do
+        case store_name(store) do
           ^default_store -> ""
           any -> any
         end
 
       IO.puts("""
-      ** index `#{store_name(args)}` is missing.
+      ** index `#{store_name(store)}` is missing.
       first create index with: superls index /path/to/my/volume_files -i #{store} [- p]
       """)
   catch
     :enoent ->
-      IO.puts("** index `#{store_name(args)}` not found\n\ntry: superls help")
+      IO.puts("** index `#{store_name(store)}` not found\n\ntry: superls help")
 
     err ->
       IO.puts("** #{err}")
-      main_args(args, Password.io_get())
+      main_args([store], Password.io_get())
   end
 
-  defp store_name([]), do: default_store()
-  defp store_name([str]) when is_binary(str), do: str
+  defp main_args(args, _password) do
+    IO.puts("** unknown command:\n  #{Enum.join(["superls" | args], " ")}\ntype `superls help`")
+  end
+
+  defp store_name(""), do: default_store()
+  defp store_name(str) when is_binary(str), do: str
 end

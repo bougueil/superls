@@ -42,6 +42,7 @@ defmodule Superls.MixProject do
 
   defp aliases do
     [
+      setup: ["clean", "deps.get", "escript.build", "escript.install"],
       precommit: [
         "compile --warnings-as-errors",
         "deps.unlock --unused",

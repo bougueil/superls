@@ -69,13 +69,11 @@ Tags present in `./priv/banned_tags` are not indexed.
 sls is built with a static secret key that can be customized with the `SLS_SECRET` environment variable.
 The secret key combined with the `-p` password protect the index content.
 ```
-mix deps.get
-mix do escript.build + escript.install
+mix setup
 asdf reshim elixir # if using asdf
 
-or with a custom secret key:
-mix deps.get
-SLS_SECRET="myBuiltSecret" mix do escript.build + escript.install
+or with a custom secret key (passwords encrypted) :
+SLS_SECRET="myBuiltSecret" mix setup
 asdf reshim elixir # if using asdf
 ```
 
