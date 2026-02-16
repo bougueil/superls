@@ -3,7 +3,7 @@ ExUnit.start()
 alias Superls.{Store, StrFmt}
 
 defmodule HelperTest do
-  @root_dir Application.compile_env!(:superls, :stores_path) |> Path.dirname()
+  @stores_path Application.compile_env!(:superls, :stores_path) |> Path.dirname()
   use Superls
 
   def create_indexes(volumes, password \\ "") do
@@ -23,7 +23,7 @@ defmodule HelperTest do
   end
 
   def empty_store,
-    do: File.rm_rf(@root_dir)
+    do: File.rm_rf(@stores_path)
 
   def get_merged_index(password \\ ""),
     do: Store.get_merged_index_from_store(default_store(), password)

@@ -5,10 +5,10 @@ defmodule Superls.MergedIndexTest do
   # defines default_store
   use Superls
 
-  @root_dir Application.compile_env!(:superls, :stores_path) |> Path.dirname()
+  @stores_path Application.compile_env!(:superls, :stores_path) |> Path.dirname()
 
   # this test uses 2 volumes_paths containing 3 files
-  volumes_paths = for vol <- ["vol1", "vol2"], do: Path.join(@root_dir, vol)
+  volumes_paths = for vol <- ["vol1", "vol2"], do: Path.join(@stores_path, vol)
   @volumes Enum.zip(Enum.map(volumes_paths, &Store.encode_digest_uri/1), volumes_paths)
 
   @f1_bbb "file1.2022.FRENCH.aaa.bbb.ccc.ogv"
