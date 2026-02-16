@@ -16,30 +16,13 @@ defmodule Superls.CLI do
   end
 
   defp main_args(["index" | args], opts) do
-    {vol_path, store_name} =
-      case args do
-        [vol_path, store] ->
-          {vol_path, store}
+    with {:ok, vol_path, store_name} <- parse_index_args(args),
+         true <- index_path?(vol_path, File.dir?(vol_path)) do
+      is_password? = Keyword.get(opts, :password, false)
+      password = if(is_password?, do: Password.io_get(), else: "")
 
-        [vol_path] ->
-          {vol_path, default_store()}
-
-        _ ->
-          IO.puts("** missing volume path\n\ntry: superls help")
-          throw({:error, :volume_path_notfound})
-      end
-
-    if !File.dir?(vol_path) do
-      IO.puts("** error: #{vol_path} is an invalid directory\n\ntry: superls help")
-      throw({:error, :invalid_directory})
+      Store.archive(vol_path, store_name, password)
     end
-
-    is_password? = Keyword.get(opts, :password, false)
-    password = if(is_password?, do: Password.io_get(), else: "")
-
-    Store.archive(vol_path, store_name, password)
-  catch
-    error -> error
   end
 
   defp main_args(["help"], _passwd) do
@@ -97,6 +80,21 @@ defmodule Superls.CLI do
     end
   end
 
+  defp parse_index_args([vol_path, store]), do: {:ok, vol_path, store}
+  defp parse_index_args([vol_path]), do: {:ok, vol_path, default_store()}
+
+  defp parse_index_args(_volume_path_notfound) do
+    IO.puts("** error: missing volume path\n\ntry: superls help")
+    {:error, :volume_path_notfound}
+  end
+
+  defp index_path?(_, true), do: true
+
+  defp index_path?(vol_path, false) do
+    IO.puts("** error: `#{vol_path}` is an invalid directory\n\ntry: superls help")
+    {:error, :invalid_directory}
+  end
+
   if Mix.env() == :test do
     defp retry_with_password(args) do
       main_args(args, "secret")
@@ -118,5 +116,5 @@ defmodule Superls.CLI do
   defp normalize_passwd(passwd), do: passwd
 
   defp valid_name([]), do: default_store()
-  defp valid_name([str]), do: str
+  defp valid_name([str | _]), do: str
 end
