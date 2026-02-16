@@ -42,6 +42,7 @@ defmodule Superls do
   end
 
   @doc "Returns `encrypted` from `term` with `passwd`"
+  @spec encrypt(index :: binary(), secret :: binary()) :: binary()
   def encrypt(index, ""),
     do: index
 
@@ -51,6 +52,7 @@ defmodule Superls do
   end
 
   @doc "Returns `decrypted` from `term` with `passwd`"
+  @spec decrypt(index :: binary(), secret :: binary()) :: {:ok, binary()} | {:error, term()}
   def decrypt(index, ""),
     do: {:ok, index}
 
