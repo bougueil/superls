@@ -9,9 +9,6 @@ defmodule Superls.Store do
   @spec archive(media_dir :: MergedIndex.volume(), store :: store(), passwd :: String.t()) ::
           no_return()
   def archive(media_dir, store_name \\ default_store(), passwd \\ "") do
-    !File.dir?(media_dir) &&
-      Superls.halt("error: media_dir: #{media_dir} must point to a directory")
-
     if Prompt.valid_default_yes?("Create|Update the `#{store_name}` index ?") do
       store_cache_path = maybe_create_dir(store_name)
       media_dir = String.trim_trailing(media_dir, "/")
@@ -34,6 +31,8 @@ defmodule Superls.Store do
           Superls.halt(
             "** invalid password: '#{passwd}' for store '#{store_name}'.\nerror: #{inspect(e)}"
           )
+
+          {:error, :invalid_password}
       end
     else
       Superls.halt("Aborting.")

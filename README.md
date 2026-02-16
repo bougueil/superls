@@ -24,26 +24,27 @@ superls index `/path/to/my/volume_files` myindex -p
 
 ### Searching tags
 
-The command to search tags with the `default` index with the CLI is :
+Search tags with the `default` index :
 
 ```bash
 superls
 ```
 
-To search with index myindex, use :
+Search with index myindex :
 
 ```bash
 superls myindex
 ```
 
-An interactive shell asks for commands like query by a list of tags, a string separated by space. A tag can be incomplete.<br>
-The result is a list of matched files.
+An interactive shell asks for commands like query by a list of tags, a string separated by space. A tag can be incomplete.
+
+The result is a list of matched files with associated size and path.
 
 ### Other CLI commands
   For help, getting superls commands ...  :
 
 ```bash
-superls
+superls help
 ```
 
 
@@ -73,7 +74,7 @@ Tags present in `./priv/banned_tags` are not indexed.
 <!-- MDOC !-->
 
 ## build
-sls is built with a static secret key that can be customized with the `SLS_SECRET` environment variable.
+`superls` is built with a static secret key that can be customized with the `SLS_SECRET` environment variable.
 The secret key combined with the `-p` password protect the index content.
 ```
 mix setup
@@ -86,5 +87,5 @@ asdf reshim elixir # if using asdf
 
 ## run
 ```
-superls help
+superls
 ```

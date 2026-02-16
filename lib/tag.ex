@@ -21,7 +21,6 @@ defmodule Superls.Tag do
 
   @doc "extract all tokens including dates `10.16.16` and times `16:57` tokens."
   @spec extract_tokens(file_path :: Path.t()) :: tokens :: list(String.t())
-
   def extract_tokens(file_path) do
     elem_r = ~r/\d{2}\.\d{2}\.\d{2}|\d{4}-\d{2}-\d{2}|\d{1,2}:\d{1,2}:\d{1,2}|\d{1,2}:\d{1,2}/
     elem_date = ~r/\d{2}\.\d{2}\.\d{2}|\d{4}-\d{2}-\d{2}/
