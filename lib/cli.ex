@@ -102,11 +102,15 @@ defmodule Superls.CLI do
 
     defp start_interactive(_args), do: :ok
   else
+    @version Mix.Project.config()[:version]
     defp retry_with_password(args) do
       main_args(args, Password.io_get())
     end
 
     defp start_interactive(args) do
+      slogan = Superls.StrFmt.to_string([{"Superls v#{@version}", :str, [:italic]}])
+
+      Application.put_env(:stdlib, :shell_slogan, slogan)
       :ok = :shell.start_interactive({Superls.CLI.Search, :start, args})
       :timer.sleep(:infinity)
     end
