@@ -1,5 +1,4 @@
 defmodule Superls.StrFmt do
-  require Logger
   import Kernel, except: [to_string: 1]
 
   @moduledoc """
@@ -78,68 +77,61 @@ defmodule Superls.StrFmt do
     `"\n"` 
   """
   @spec to_string(str_fmt :: t()) :: formatted_str :: String.t()
-  def to_string(str_fmt) when is_list(str_fmt) do
+  def to_string(str_fmt) when is_list(str_fmt), do: ansi_assemble(str_fmt) |> elem(0)
+
+  @doc "assemble `str_fmt` into a string and associated length"
+  @spec ansi_assemble(str_fmt :: t()) :: {assembled :: String.t(), len :: integer()}
+  def ansi_assemble(str_fmt) when is_list(str_fmt) do
     ncols = ncols()
 
-    # not optimal best to keep a IOList in acc
-    # but don't know how to compute the length of a IOList without ascii color chars.
     str_fmt
     |> List.flatten()
     |> Enum.reduce({"", 0}, fn
       {val, fmt_type, ansidata}, {acc, acclen} ->
-        fmt = IO.ANSI.format(ansidata ++ [fmt_type(fmt_type, val, acclen, ncols)])
-        # List.ascii_printable?
-        {fmt, len_fmt} =
-          try do
-            text_length(fmt)
-          rescue
-            err ->
-              Logger.warning("error: " <> inspect(err) <> " wrong chars : " <> inspect(fmt))
-              text_length(IO.ANSI.format(ansidata))
-          end
-
-        {acc <> fmt, acclen + len_fmt}
+        {fmt_len, fmt} = type_fmt(fmt_type, val, acclen, ncols)
+        fmt = IO.ANSI.format(ansidata ++ [fmt]) |> Kernel.to_string()
+        {acc <> fmt, acclen + fmt_len}
 
       "\n", {acc, _acclen} ->
         {acc <> "\n", 0}
 
       str, {acc, acclen} when is_binary(str) ->
-        {fmt, len_fmt} = text_length(str)
-
-        {acc <> fmt, acclen + len_fmt}
+        {acc <> str, acclen + :string.length(str)}
     end)
-    |> elem(0)
   end
 
   @doc "puts(fmt) convenience for `to_string(fmt) |> IO.puts()`"
   @spec puts(str_fmt :: t()) :: :ok
   def puts(str_fmt) when is_list(str_fmt), do: __MODULE__.to_string(str_fmt) |> IO.puts()
 
-  defp fmt_type(:datetime, val, _acclen, _ncols),
-    do: val |> DateTime.from_unix!() |> Calendar.strftime("%y-%m-%d %H:%M:%S")
+  defp type_fmt(:datetime, val, _acclen, _ncols),
+    do: val |> DateTime.from_unix!() |> Calendar.strftime("%y-%m-%d %H:%M:%S") |> type_fmt_str()
 
-  defp fmt_type(:date, val, _acclen, _ncols),
-    do: val |> DateTime.from_unix!() |> DateTime.to_date() |> Date.to_string()
+  defp type_fmt(:date, val, _acclen, _ncols),
+    do: val |> DateTime.from_unix!() |> DateTime.to_date() |> Date.to_string() |> type_fmt_str()
 
-  defp fmt_type(:str, val, _acclen, _ncols), do: "#{val}"
+  defp type_fmt(:str, val, _acclen, _ncols), do: "#{val}" |> type_fmt_str()
 
-  defp fmt_type(:sizeb, val, _acclen, _ncols), do: pp_sz(val)
+  defp type_fmt(:sizeb, val, _acclen, _ncols), do: pp_sz(val) |> type_fmt_str()
 
-  defp fmt_type(:scr, val, acclen, ncols) when is_binary(val),
-    do: shorten_text(val, ncols - acclen)
+  defp type_fmt(:scr, val, acclen, ncols) when is_binary(val),
+    do: shorten_text(val, ncols - acclen) |> type_fmt_str()
 
-  defp fmt_type({:scr, pcent}, val, acclen, ncols)
+  defp type_fmt({:scr, pcent}, val, acclen, ncols)
        when is_integer(pcent) and pcent <= 100 and pcent >= 0 and is_binary(val),
-       do: shorten_text(val, min(ncols - acclen, div(ncols * pcent, 100)))
+       do: shorten_text(val, min(ncols - acclen, div(ncols * pcent, 100))) |> type_fmt_str()
 
-  defp fmt_type(:padr, val, acclen, ncols) when is_binary(val),
-    do: str_fmt_pad(&String.last/1, &String.pad_trailing/3, val, acclen, ncols)
+  defp type_fmt(:padr, val, acclen, ncols) when is_binary(val),
+    do: str_fmt_pad(&String.last/1, &String.pad_trailing/3, val, acclen, ncols) |> type_fmt_str()
 
-  defp fmt_type(:padl, val, acclen, ncols) when is_binary(val),
-    do: str_fmt_pad(&String.first/1, &String.pad_leading/3, val, acclen, ncols)
+  defp type_fmt(:padl, val, acclen, ncols) when is_binary(val),
+    do: str_fmt_pad(&String.first/1, &String.pad_leading/3, val, acclen, ncols) |> type_fmt_str()
 
-  defp fmt_type(type, _val, acclen, ncols) do
-    fmt_type(:scr, "invalid str_fmt type: `#{inspect(type)}`", acclen, ncols)
+  defp type_fmt(type, _val, acclen, ncols),
+    do: type_fmt(:scr, "invalid str_fmt type: `#{inspect(type)}`", acclen, ncols)
+
+  defp type_fmt_str(str) do
+    {:string.length(str), str}
   end
 
   @doc false
@@ -183,11 +175,6 @@ defmodule Superls.StrFmt do
     else
       val
     end
-  end
-
-  def text_length(txt) do
-    str = Kernel.to_string(txt)
-    {str, Regex.replace(~r/\e\[[0-9;]*[a-zA-Z]/, str, "") |> :string.length()}
   end
 
   @doc "Returns the terminal number of columns."

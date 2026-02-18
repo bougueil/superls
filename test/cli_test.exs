@@ -98,15 +98,15 @@ defmodule Superls.CliTest do
   end
 
   test "superls create index invalid_directory, no existing store" do
-    argv = ~w(index invalid_directory)
+    argv = ~w(index my_invalid_directory)
     {{:error, :invalid_directory}, res} = with_io(fn -> Superls.CLI.main(argv) end)
     assert String.contains?(res, "invalid_directory")
   end
 
   test "superls create index invalid_directory myindex, no existing store" do
-    argv = ~w(index invalid_directory myindex)
-    res = Superls.CLI.main(argv)
-    assert res == {:error, :invalid_directory}
+    argv = ~w(index my_invalid_directory myindex)
+    {{:error, :invalid_directory}, res} = with_io(fn -> Superls.CLI.main(argv) end)
+    assert String.contains?(res, "invalid_directory")
   end
 
   test "superls create index with -p and read it" do

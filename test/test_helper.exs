@@ -36,8 +36,5 @@ defmodule HelperTest do
 
   @ncols StrFmt.ncols()
 
-  def fit_in_ncols?(str) do
-    String.split(str, "\n", trim: true)
-    |> Enum.all?(&(elem(StrFmt.text_length(&1), 1) <= @ncols))
-  end
+  def fit_in_ncols?(len) when is_integer(len), do: len <= @ncols
 end
