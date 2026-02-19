@@ -1,6 +1,4 @@
 defmodule Superls.StrFmt do
-  import Kernel, except: [to_string: 1]
-
   @moduledoc """
   ```elixir
   iex> Superls.StrFmt.to_string [{12000, :sizeb, [:bright]}]
@@ -89,7 +87,7 @@ defmodule Superls.StrFmt do
     |> Enum.reduce({"", 0}, fn
       {val, fmt_type, ansidata}, {acc, acclen} ->
         {fmt_len, fmt} = type_fmt(fmt_type, val, acclen, ncols)
-        fmt = IO.ANSI.format(ansidata ++ [fmt]) |> Kernel.to_string()
+        fmt = IO.ANSI.format(ansidata ++ [fmt]) |> IO.chardata_to_string()
         {acc <> fmt, acclen + fmt_len}
 
       "\n", {acc, _acclen} ->
