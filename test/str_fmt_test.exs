@@ -2,7 +2,7 @@ defmodule StrFmtTest do
   use ExUnit.Case, async: true
   alias Superls.StrFmt
 
-  # ncols string
+  # string with ncols chars
   @max_str "aaaaaaaaaabbbbbbbbbbccccccccccdddddddddd"
 
   test ":sizeb B" do
@@ -174,29 +174,27 @@ defmodule StrFmtTest do
     assert HelperTest.fit_in_ncols?(len)
   end
 
-  if IO.ANSI.enabled?() do
-    test ":sizeb + color" do
-      {res, len} =
-        [{1024, :sizeb, [:light_blue_background]}]
-        |> StrFmt.ansi_assemble()
+  test ":sizeb + color" do
+    {res, len} =
+      [{1024, :sizeb, [:light_blue_background]}]
+      |> StrFmt.ansi_assemble()
 
-      assert res == "\e[104m  1024B\e[0m"
-      assert HelperTest.fit_in_ncols?(len)
-    end
+    assert res == "#{IO.ANSI.light_blue_background()}  1024B#{IO.ANSI.reset()}"
+    assert HelperTest.fit_in_ncols?(len)
+  end
 
-    test ":str + color" do
-      {res, len} =
-        [{"Example", :str, [:blue_background]}]
-        |> StrFmt.ansi_assemble()
+  test ":str + color" do
+    {res, len} =
+      [{"Example", :str, [:blue_background]}]
+      |> StrFmt.ansi_assemble()
 
-      assert res == "\e[44mExample\e[0m"
-      assert HelperTest.fit_in_ncols?(len)
-    end
+    assert res == "#{IO.ANSI.blue_background()}Example#{IO.ANSI.reset()}"
+    assert HelperTest.fit_in_ncols?(len)
   end
 
   test ":date + color" do
     {res, len} = [{1_696_153_262, :date, [:blue]}] |> StrFmt.ansi_assemble()
-    assert res == "\e[34m2023-10-01\e[0m"
+    assert res == "#{IO.ANSI.blue()}2023-10-01#{IO.ANSI.reset()}"
     assert HelperTest.fit_in_ncols?(len)
   end
 
@@ -204,7 +202,7 @@ defmodule StrFmtTest do
     str = @max_str
 
     {res, len} = [{str, :scr, [:blue]}] |> StrFmt.ansi_assemble()
-    assert res == "\e[34maaaaaaaaaabbbbbbbbbbccccccccccdddddddddd\e[0m"
+    assert res == "#{IO.ANSI.blue()}aaaaaaaaaabbbbbbbbbbccccccccccdddddddddd#{IO.ANSI.reset()}"
     assert HelperTest.fit_in_ncols?(len)
   end
 
@@ -212,14 +210,14 @@ defmodule StrFmtTest do
     str = "A" <> @max_str <> "B"
 
     {res, len} = [{str, :scr, [:blue]}] |> StrFmt.ansi_assemble()
-    assert res == "\e[34mAaaaaaaaaaabbbbbbbb..ccccccccddddddddddB\e[0m"
+    assert res == "#{IO.ANSI.blue()}Aaaaaaaaaaabbbbbbbb..ccccccccddddddddddB#{IO.ANSI.reset()}"
     assert HelperTest.fit_in_ncols?(len)
   end
 
   test "one :str + one newline" do
     {res, len} = ["\n", {"Bla", :str, [:blue]}, "\n"] |> StrFmt.ansi_assemble()
 
-    assert res == "\n\e[34mBla\e[0m\n"
+    assert res == "\n#{IO.ANSI.blue()}Bla#{IO.ANSI.reset()}\n"
     assert HelperTest.fit_in_ncols?(len)
   end
 
@@ -229,7 +227,10 @@ defmodule StrFmtTest do
     bla = String.pad_leading("", div(@ncols, 2))
     {res, len} = ["\n", {bla, :str, [:red]}, {bla, :str, [:cyan]}] |> StrFmt.ansi_assemble()
 
-    assert res == "\n\e[31m" <> bla <> "\e[0m\e[36m" <> bla <> "\e[0m"
+    assert res ==
+             "\n#{IO.ANSI.red()}" <>
+               bla <> "#{IO.ANSI.reset()}#{IO.ANSI.cyan()}" <> bla <> "#{IO.ANSI.reset()}"
+
     assert HelperTest.fit_in_ncols?(len)
   end
 end
