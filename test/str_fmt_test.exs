@@ -233,4 +233,32 @@ defmodule StrFmtTest do
 
     assert HelperTest.fit_in_ncols?(len)
   end
+
+  test "1 long link fit in ncols" do
+    link = String.pad_leading("", @ncols, "L")
+    uri = "https://myexample.com/"
+    {res, len} = [{{link, uri}, :link, [:cyan, :bright]}] |> StrFmt.ansi_assemble()
+
+    assert res ==
+             "#{IO.ANSI.cyan()}#{IO.ANSI.bright()}\e]8;;" <>
+               uri <> "\e\\" <> link <> "\e]8;;\e\\\e[0m"
+
+    assert HelperTest.fit_in_ncols?(len)
+  end
+
+  test "1 :str + 1 :link" do
+    bla = String.pad_leading("", div(@ncols, 2))
+    uri = "https://myexample.com/superlonggggggggggggggggggg"
+
+    {res, len} =
+      ["\n", {bla, :str, [:red]}, {{bla, uri}, :link, [:cyan]}] |> StrFmt.ansi_assemble()
+
+    assert res ==
+             "\n#{IO.ANSI.red()}" <>
+               bla <>
+               "#{IO.ANSI.reset()}#{IO.ANSI.cyan()}\e]8;;" <>
+               uri <> "\e\\" <> bla <> "\e]8;;\e\\\e[0m"
+
+    assert HelperTest.fit_in_ncols?(len)
+  end
 end

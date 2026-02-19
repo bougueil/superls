@@ -13,18 +13,19 @@ defmodule Superls.StrFmt do
        ] |> Superls.StrFmt.to_string()
   ```
 
-  str_fmt_unit                        | output for a 8 columns terminal
-  :---------------------------------- | :---------
-  `"abc"`                             | `"abc"`
-  `[{"abc", :str, [:blue]}]`          | `"\e[34mabc\e[0m"`
-  `[{123, :str, [:blue]}]`            | `"\e[34m123\e[0m"`
-  `[{12000, :sizeb, []}]`             | `"  11.7K"`  # could be B, K, M and G.
-  `[{1696153262, :date, [:blue]}]`    | `"\e[34m2023-10-01\e[0m"`
-  `[{1696153262, :datetime, []}]`     | `"23-10-01 09:41:02"`
-  `[{"9char-str", {:scr,50}, []}]`    | `"9..r"`     # 50% of 9 chars screen
-  `[{"9char-str", :scr, []}]`         | `"9ch..str"` # equiv. of {:scr, 100}
-  `[{"foo_", :padr, []}]`             | `"foo_____"`
-  `[{"_", :padl, [:red]}]`            | `"\e[31m_____\e[0m"`
+  str_fmt_unit                                        | output for a 8 columns terminal
+  :---------------------------------------------------| :---------
+  `"abc"`                                             | `"abc"`
+  `[{"abc", :str, [:blue]}]`                          | `"\e[34mabc\e[0m"`
+  `[{123, :str, [:blue]}]`                            | `"\e[34m123\e[0m"`
+  `[{{"link", "http://ubuntu.com/"}, :link, [:red]}]` | `"\e[31m\e]8;;http://ubuntu.com/\e\\link\e]8;;\e\\\e[0m"`
+  `[{12000, :sizeb, []}]`                             | `"  11.7K"`  # could be B, K, M and G.
+  `[{1696153262, :date, [:blue]}]`                    | `"\e[34m2023-10-01\e[0m"`
+  `[{1696153262, :datetime, []}]`                     | `"23-10-01 09:41:02"`
+  `[{"9char-str", {:scr,50}, []}]`                    | `"9..r"`     # 50% of 9 chars screen
+  `[{"9char-str", :scr, []}]`                         | `"9ch..str"` # equiv. of {:scr, 100}
+  `[{"foo_", :padr, []}]`                             | `"foo_____"`
+  `[{"_", :padl, [:red]}]`                            | `"\e[31m_____\e[0m"`
   """
 
   @type str_fmt_unit() ::
@@ -37,6 +38,7 @@ defmodule Superls.StrFmt do
           | {String.t(), {:scr, number()}, IO.ANSI.ansidata()}
           | {String.t(), :padl, IO.ANSI.ansidata()}
           | {String.t(), :padr, IO.ANSI.ansidata()}
+          | {{link :: String.t(), uri :: String.t()}, :link, IO.ANSI.ansidata()}
           | [str_fmt_unit()]
 
   @type t :: [str_fmt_unit()]
@@ -67,6 +69,9 @@ defmodule Superls.StrFmt do
   - human readable date, datetime (posix)
 
     `date` `datetime`
+  - link to URI
+
+    `link`
   - basic types interpolation
 
     `str`
@@ -110,6 +115,8 @@ defmodule Superls.StrFmt do
 
   defp type_fmt(:str, val, _acclen, _ncols), do: "#{val}" |> type_fmt_str()
 
+  defp type_fmt(:link, {link, uri}, _acclen, _ncols), do: {link, uri} |> type_fmt_link()
+
   defp type_fmt(:sizeb, val, _acclen, _ncols), do: pp_sz(val) |> type_fmt_str()
 
   defp type_fmt(:scr, val, acclen, ncols) when is_binary(val),
@@ -128,9 +135,9 @@ defmodule Superls.StrFmt do
   defp type_fmt(type, _val, acclen, ncols),
     do: type_fmt(:scr, "invalid str_fmt type: `#{inspect(type)}`", acclen, ncols)
 
-  defp type_fmt_str(str) do
-    {:string.length(str), str}
-  end
+  defp type_fmt_str(str), do: {:string.length(str), str}
+
+  defp type_fmt_link({link, uri}), do: {:string.length(link), link(link, uri)}
 
   @doc false
   def pp_sz(size) when is_integer(size) do
@@ -187,4 +194,6 @@ defmodule Superls.StrFmt do
       end
     end
   end
+
+  defp link(link, uri), do: "\e]8;;#{uri}\e\\#{link}\e]8;;\e\\"
 end
