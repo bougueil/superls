@@ -108,8 +108,8 @@ defmodule Superls.CLI do
     end
 
     defp start_interactive(args) do
-      slogan = Superls.StrFmt.to_string([{"Superls v#{@version}", :str, [:italic]}])
-
+      uri = "https://github.com/bougueil/superls/blob/main/README.md"
+      slogan = Superls.StrFmt.to_string([{{"Superls v#{@version}", uri}, :link, [:italic]}])
       Application.put_env(:stdlib, :shell_slogan, slogan)
       :ok = :shell.start_interactive({Superls.CLI.Search, :start, args})
       :timer.sleep(:infinity)
