@@ -1,6 +1,7 @@
 ExUnit.start()
 
 alias Superls.{Store, StrFmt}
+Application.put_env(:elixir, :ansi_enabled, true)
 
 defmodule HelperTest do
   @stores_path Application.compile_env!(:superls, :stores_path) |> Path.dirname()
