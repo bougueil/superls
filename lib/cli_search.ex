@@ -54,22 +54,23 @@ defmodule Superls.CLI.Search do
     ])
     |> IO.write()
 
-    case IO.read(:line) do
-      :eof ->
-        :ok
+    opts =
+      case IO.read(:line) do
+        :eof ->
+          :ok
 
-      {:error, reason} ->
-        exit(reason)
+        {:error, reason} ->
+          exit(reason)
 
-      data ->
-        command(mi, data |> to_string() |> String.trim(), opts)
-    end
-    |> tap(fn read -> read == :abort && System.halt() end)
+        data ->
+          command(mi, data |> to_string() |> String.trim(), opts)
+      end
+      |> tap(fn read -> read == :abort && System.halt() end)
 
     loop(mi, opts)
   end
 
-  defp command(_merged_index, "", _opts), do: :ok
+  defp command(_merged_index, "", opts), do: opts
 
   defp command(_merged_index, "q", _opts) do
     IO.puts("CLI exits.")
@@ -115,9 +116,11 @@ defmodule Superls.CLI.Search do
 
       IO.puts("files names stored in #{@superl_filenames}.\n")
     end
+
+    opts
   end
 
-  defp command(mi, cmd, _opts) when cmd in ~w(xd rd) do
+  defp command(mi, cmd, opts) when cmd in ~w(xd rd) do
     today = Date.utc_today()
 
     date =
@@ -138,9 +141,11 @@ defmodule Superls.CLI.Search do
 
     [MatchDate.format(result, cmd), "[CLI found #{MatchDate.size(result)} result(s)]"]
     |> IO.puts()
+
+    opts
   end
 
-  defp command(mi, cmd, _opts) when cmd in ~w(xo xn ro rn) do
+  defp command(mi, cmd, opts) when cmd in ~w(xo xn ro rn) do
     nentries =
       Prompt.valid_default_or_new_input(
         "Confirm display first #{@num_files_search_oldness} entries (Y/new_value) ? ",
@@ -152,27 +157,31 @@ defmodule Superls.CLI.Search do
 
     [MatchDate.format(result, cmd), "[CLI found #{MatchDate.size(result)} result(s)]"]
     |> IO.puts()
+
+    opts
   end
 
-  defp command(mi, "ds", _opts) do
+  defp command(mi, "ds", opts) do
     IO.write("group files with similar size, this may take a while ...\r")
 
     result =
       MergedIndex.search_similar_size(mi)
 
     [MatchSize.format(result), "[CLI found #{MatchSize.size(result)} result(s)]"] |> IO.puts()
+    opts
   end
 
-  defp command(mi, "dt", _opts) do
+  defp command(mi, "dt", opts) do
     IO.write("group files with similar tags, this may take a while ...\r")
 
     result = MergedIndex.search_duplicated_tags(mi)
 
     [MatchJaro.format(result), "[CLI found #{MatchJaro.size(result)} result(s)]"] |> IO.puts()
+    opts
   end
 
   # @limit_top_tags 500
-  defp command(mi, "s", _opts) do
+  defp command(mi, "s", opts) do
     tag_freqs = MergedIndex.tag_freq(mi)
 
     tags_by_occur =
@@ -208,9 +217,11 @@ defmodule Superls.CLI.Search do
     ]
     |> StrFmt.to_string()
     |> IO.puts()
+
+    opts
   end
 
-  defp command(mi, "a", _opts) do
+  defp command(mi, "a", opts) do
     IO.write("enter tags to associate: ")
 
     {result, user_tags} =
@@ -225,9 +236,6 @@ defmodule Superls.CLI.Search do
           MergedIndex.search_bytag(mi, search_tags_string |> to_string())
       end
 
-    # IO.puts("result: #{inspect(result)}")
-    # IO.puts("user_tags: #{inspect(user_tags)}")
-
     user_tags_fmt =
       Enum.map(user_tags, &{&1, :str, [:bright]}) |> Enum.intersperse(" * ") |> StrFmt.to_string()
 
@@ -235,15 +243,17 @@ defmodule Superls.CLI.Search do
       MatchTag.format_tags(result, user_tags),
       "[CLI found #{MatchTag.size(result)} result(s) for `#{user_tags_fmt}`]"
     ])
+
+    opts
   end
 
-  defp command(mi, "r", _opts) do
+  defp command(mi, "r", opts) do
     tag = MergedIndex.random_tag(mi)
     IO.puts("Random tag: \"#{tag}\"")
-    command(mi, tag, nil)
+    command(mi, tag, opts)
   end
 
-  defp command(mi, user_input, _opts) when byte_size(user_input) > 1 do
+  defp command(mi, user_input, opts) when byte_size(user_input) > 1 do
     {result, user_tags} = MergedIndex.search_bytag(mi, user_input)
 
     user_tags =
@@ -253,10 +263,14 @@ defmodule Superls.CLI.Search do
       MatchTag.format_files(result),
       "[CLI found #{MatchTag.size(result)} result(s) for `#{user_tags}`]"
     ])
+
+    opts
   end
 
-  defp command(_merged_index, user_input, _opts),
-    do: IO.puts("Unrecognized command: \"#{user_input}\"")
+  defp command(_merged_index, user_input, opts) do
+    IO.puts("Unrecognized command: \"#{user_input}\"")
+    opts
+  end
 
   defp dump_files(files) do
     files
