@@ -14,10 +14,11 @@ defmodule Superls.StrFmt do
   ```
 
   str_fmt_unit                                        | output for a 8 columns terminal
-  :---------------------------------------------------| :---------
+  :-------------------------------------------------- | :---------
   `"abc"`                                             | `"abc"`
   `[{"abc", :str, [:blue]}]`                          | `"\e[34mabc\e[0m"`
   `[{123, :str, [:blue]}]`                            | `"\e[34m123\e[0m"`
+  `[{{5, "abc"}, :str, [:blue]}]`                     | `"\e[34m  abc\e[0m"`
   `[{{"link", "http://ubuntu.com/"}, :link, [:red]}]` | `"\e[31m\e]8;;http://ubuntu.com/\e\\link\e]8;;\e\\\e[0m"`
   `[{12000, :sizeb, []}]`                             | `"  11.7K"`  # could be B, K, M and G.
   `[{1696153262, :date, [:blue]}]`                    | `"\e[34m2023-10-01\e[0m"`
@@ -31,6 +32,8 @@ defmodule Superls.StrFmt do
   @type str_fmt_unit() ::
           String.t()
           | {String.t() | :atom | charlist() | number(), :str, IO.ANSI.ansidata()}
+          | {{lpad :: integer(), String.t() | :atom | charlist() | number()}, :str,
+             IO.ANSI.ansidata()}
           | {integer(), :sizeb, IO.ANSI.ansidata()}
           | {posix_time :: integer(), :date, IO.ANSI.ansidata()}
           | {posix_time :: integer(), :datetime, IO.ANSI.ansidata()}
@@ -75,6 +78,11 @@ defmodule Superls.StrFmt do
   - basic types interpolation
 
     `str`
+
+  - left padding basic types interpolation
+
+    `{lpad_width, str}` # same as String.pad_leading(str, pad_width, " ")
+
   - newline
 
     `"\n"` 
@@ -112,6 +120,9 @@ defmodule Superls.StrFmt do
 
   defp type_fmt(:date, val, _acclen, _ncols),
     do: val |> DateTime.from_unix!() |> DateTime.to_date() |> Date.to_string() |> type_fmt_str()
+
+  defp type_fmt(:str, {lpad_width, val}, _acclen, _ncols),
+    do: String.pad_leading("#{val}", lpad_width) |> type_fmt_str()
 
   defp type_fmt(:str, val, _acclen, _ncols), do: "#{val}" |> type_fmt_str()
 

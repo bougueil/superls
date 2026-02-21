@@ -192,6 +192,15 @@ defmodule StrFmtTest do
     assert HelperTest.fit_in_ncols?(len)
   end
 
+  test "lpad, :str + color" do
+    {res, len} =
+      [{{6, "12.5"}, :str, [:blue_background]}]
+      |> StrFmt.ansi_assemble()
+
+    assert res == "#{IO.ANSI.blue_background()}  12.5#{IO.ANSI.reset()}"
+    assert HelperTest.fit_in_ncols?(len)
+  end
+
   test ":date + color" do
     {res, len} = [{1_696_153_262, :date, [:blue]}] |> StrFmt.ansi_assemble()
     assert res == "#{IO.ANSI.blue()}2023-10-01#{IO.ANSI.reset()}"
