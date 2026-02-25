@@ -49,7 +49,7 @@ defmodule Superls.CLI.Search do
       {"command", :str, [:italic]},
       " or tags like ",
       {"angel.1937\n", :str, [:italic]},
-      "cmds: q]uit, dt]upl_tags, ds]upl_size, xo|xn|ro|rn]date_old, xd|rd]bydate,\n      s]ort_tags, a]ssoc_tags, r]andom_tag, m]etrics\n",
+      "cmds: q]uit, dt]upl_tags, ds]upl_size, xo|xn|ro|rn]date_old, xd|rd]bydate,\n      s]ort_tags, a]ssoc_tags, r]andom_tag, m]etrics, t]oggle_display\n",
       "> "
     ])
     |> IO.write()
@@ -95,8 +95,7 @@ defmodule Superls.CLI.Search do
         "\n"
       ]
     end)
-    |> StrFmt.to_string()
-    |> IO.puts()
+    |> StrFmt.puts()
 
     IO.puts("""
     Details for the `#{store}` store :
@@ -215,8 +214,7 @@ defmodule Superls.CLI.Search do
         ]
       end
     ]
-    |> StrFmt.to_string()
-    |> IO.puts()
+    |> StrFmt.puts()
 
     opts
   end
@@ -253,6 +251,13 @@ defmodule Superls.CLI.Search do
     command(mi, tag, opts)
   end
 
+  @show_flag_values ~w(default size last-write-yymm last-write last-read) |> List.to_tuple()
+
+  # toggle display formatting
+  defp command(mi, "t", opts) do
+    command(mi, Keyword.get(opts, :last_search), rotate_show_flag_pos(opts))
+  end
+
   defp command(mi, user_input, opts) when byte_size(user_input) > 1 do
     {result, user_tags} = MergedIndex.search_bytag(mi, user_input)
 
@@ -260,16 +265,30 @@ defmodule Superls.CLI.Search do
       Enum.map(user_tags, &{&1, :str, [:bright]}) |> Enum.intersperse(" * ") |> StrFmt.to_string()
 
     IO.puts([
-      MatchTag.format_files(result),
+      MatchTag.format_files(result, opts),
       "[CLI found #{MatchTag.size(result)} result(s) for `#{user_tags}`]"
     ])
 
-    opts
+    Keyword.put(opts, :last_search, user_input)
   end
 
   defp command(_merged_index, user_input, opts) do
     IO.puts("Unrecognized command: \"#{user_input}\"")
     opts
+  end
+
+  defp rotate_show_flag_pos(opts) do
+    Keyword.get_and_update(opts, :show_flag_pos, fn flag_pos ->
+      new_flag_pos = rem(flag_pos + 1, tuple_size(@show_flag_values))
+
+      StrFmt.puts([
+        "format updated to: ",
+        {"#{elem(@show_flag_values, new_flag_pos)}", :str, [:italic]}
+      ])
+
+      {flag_pos, new_flag_pos}
+    end)
+    |> elem(1)
   end
 
   defp dump_files(files) do

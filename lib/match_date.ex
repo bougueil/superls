@@ -64,11 +64,17 @@ defmodule Superls.MatchDate do
 
   defp sorter_field(cmd) do
     case cmd do
+      # write older
       "xo" -> {fn {_fpa, a, _vola}, {_fpb, b, _volb} -> a.mtime < b.mtime end, & &1.mtime}
+      # wn write newer
       "xn" -> {fn {_fpa, a, _vola}, {_fpb, b, _volb} -> a.mtime >= b.mtime end, & &1.mtime}
+      # ro read older
       "ro" -> {fn {_fpa, a, _vola}, {_fpb, b, _volb} -> a.atime < b.atime end, & &1.atime}
+      # rn read newer
       "rn" -> {fn {_fpa, a, _vola}, {_fpb, b, _volb} -> a.atime >= b.atime end, & &1.atime}
+      # wd write days
       "xd" -> {nil, & &1.mtime}
+      # rd read days
       "rd" -> {nil, & &1.atime}
     end
   end

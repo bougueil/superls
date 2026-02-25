@@ -6,7 +6,7 @@ defmodule Superls.MatchTag do
 
   def size(result), do: Enum.sum_by(result, fn {_vol, fps} -> length(fps) end)
 
-  def format_files(vol_fps) when is_list(vol_fps) do
+  def format_files(vol_fps, opts) when is_list(vol_fps) do
     Enum.map(vol_fps, fn
       {_vol, []} ->
         []
@@ -16,19 +16,70 @@ defmodule Superls.MatchTag do
           {"#{vol} (#{length(fps)} entries)", :str, [:light_magenta, :reverse]},
           {"_", :padr, [:light_magenta]},
           "\n",
-          for {fp, f_info} <- fps do
-            [
-              {f_info.size, :sizeb, []},
-              " ",
-              {Path.basename(fp), {:scr, 60}, [:bright]},
-              "  ",
-              {Path.dirname(fp), :scr, []},
-              "\n"
-            ]
-          end
+          Enum.map(fps, &format_file(&1, Keyword.fetch!(opts, :show_flag_pos)))
         ]
     end)
     |> StrFmt.to_string()
+  end
+
+  @display_default 0
+  @display_size 1
+  @display_last_write_yymm 2
+  @display_last_write 3
+  @display_last_read 4
+
+  def format_file({fp, f_info}, @display_size) do
+    [
+      {f_info.size, :sizeb, []},
+      " "
+    ] ++ format_file({fp, f_info}, @display_default)
+  end
+
+  def format_file({fp, f_info}, @display_last_write_yymm) do
+    yms = f_info.mtime |> DateTime.from_unix!() |> Calendar.strftime("%y%m")
+
+    [
+      {f_info.size, :sizeb, []},
+      " #{yms} "
+    ] ++ format_file({fp, f_info}, @display_default)
+  end
+
+  def format_file({fp, f_info}, @display_last_write) do
+    yms = f_info.mtime |> DateTime.from_unix!() |> Calendar.strftime("%y-%m-%d")
+
+    [
+      {f_info.size, :sizeb, []},
+      " #{yms} "
+    ] ++ format_file({fp, f_info}, @display_default)
+  end
+
+  def format_file({fp, f_info}, @display_last_read) do
+    duration_s = f_info.atime - f_info.mtime
+    weeks = div(duration_s, 3600 * 24 * 7)
+
+    remain_s =
+      if weeks == 0 do
+        duration_s
+      else
+        duration_s - weeks * 3600 * 24 * 7
+      end
+
+    yms = "#{weeks}W-#{div(remain_s, 3600 * 24)}D "
+
+    [
+      {f_info.size, :sizeb, []},
+      {{9, yms}, :str, []}
+    ] ++ format_file({fp, f_info}, @display_default)
+  end
+
+  # @display_default
+  def format_file({fp, _f_info}, @display_default) do
+    [
+      {Path.basename(fp), {:scr, 60}, [:bright]},
+      "  ",
+      {Path.dirname(fp), :scr, []},
+      "\n"
+    ]
   end
 
   def format_tags(vol_fps, exclude_tags) when is_list(vol_fps) do

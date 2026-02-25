@@ -115,7 +115,7 @@ defmodule Superls.MatchTagTest do
         HelperTest.get_merged_index()
         |> MergedIndex.search_bytag(tags_string)
         |> elem(0)
-        |> MatchTag.format_files()
+        |> MatchTag.format_files(show_flag_pos: 0)
       end)
 
     assert String.contains?("#{result}", "1 entries")

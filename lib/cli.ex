@@ -49,10 +49,11 @@ defmodule Superls.CLI do
   defp main_args(args, passwd) do
     passwd = normalize_passwd(passwd)
     store_name = valid_name(args)
+    opts = [show_flag_pos: 0, store: store_name, passwd: passwd, last_search: ""]
 
     try do
       mi = Store.get_merged_index_from_store(store_name, passwd)
-      :ok = start_interactive([mi, [store: store_name, passwd: passwd]])
+      :ok = start_interactive([mi, opts])
     rescue
       _e in File.Error ->
         default_store = default_store()
