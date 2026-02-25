@@ -49,7 +49,7 @@ defmodule Superls.CLI.Search do
       {"command", :str, [:italic]},
       " or tags like ",
       {"angel.1937\n", :str, [:italic]},
-      "cmds: q]uit, dt]upl_tags, ds]upl_size, xo|xn|ro|rn]date_old, xd|rd]bydate,\n      s]ort_tags, a]ssoc_tags, r]andom_tag, m]etrics, t]oggle_display\n",
+      "cmds: q]uit, dt]upl_tags, ds]upl_size, r0|xo|xn|ro|rn]date_old, xd|rd]bydate,\n      s]ort_tags, a]ssoc_tags, r]andom_tag, m]etrics, t]oggle_display\n",
       "> "
     ])
     |> IO.write()
@@ -144,7 +144,7 @@ defmodule Superls.CLI.Search do
     opts
   end
 
-  defp command(mi, cmd, opts) when cmd in ~w(xo xn ro rn) do
+  defp command(mi, cmd, opts) when cmd in ~w(r0 xo xn ro rn) do
     nentries =
       Prompt.valid_default_or_new_input(
         "Confirm display first #{@num_files_search_oldness} entries (Y/new_value) ? ",

@@ -37,10 +37,10 @@ defmodule Superls.MatchDateTest do
     :ok
   end
 
-  test "match date oldness xo-xn-rn-ro" do
+  test "match date oldness r0-xo-xn-rn-ro" do
     mi = HelperTest.get_merged_index()
 
-    for search_type <- ~w(xo ro xn rn) do
+    for search_type <- ~w(r0 xo ro xn rn) do
       {result, _} = with_io(fn -> MergedIndex.search_oldness(mi, search_type, 10) end)
       assert length(result) == 7
     end

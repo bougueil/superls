@@ -34,6 +34,16 @@ defmodule Superls.MatchDate do
   - `rn`: accessed newest
   the default number of returned files is set by the config parameter `:num_files`
   """
+  def search_oldness(files, "r0", nentries) do
+    IO.puts("search 'never read' files, max: (#{nentries} files): ")
+
+    files
+    |> Enum.filter(fn {_fpa, a, _vola} ->
+      a.atime == a.mtime
+    end)
+    |> Enum.take(nentries)
+  end
+
   def search_oldness(files, cmd, nentries) do
     {sorter, _} = sorter_field(cmd)
     IO.puts("search newest/oldest (#{cmd}) files, max: (#{nentries} files): ")
@@ -72,6 +82,8 @@ defmodule Superls.MatchDate do
       "ro" -> {fn {_fpa, a, _vola}, {_fpb, b, _volb} -> a.atime < b.atime end, & &1.atime}
       # rn read newer
       "rn" -> {fn {_fpa, a, _vola}, {_fpb, b, _volb} -> a.atime >= b.atime end, & &1.atime}
+      # r0 never read file
+      "r0" -> {fn _ -> nil end, & &1.mtime}
       # wd write days
       "xd" -> {nil, & &1.mtime}
       # rd read days
