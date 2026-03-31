@@ -250,12 +250,14 @@ defmodule Superls.MergedIndex do
   end
 
   #   returns the list of indexed filenames 
-  @spec filenames(t()) :: list(file_name())
-  defp filenames(mi) when is_list(mi) do
+  @spec filenames(t(), boolean()) :: list(file_name())
+  def filenames(mi, with_path? \\ false) when is_list(mi) do
+    joiner = if with_path?, do: &Path.join/2, else: fn _media, fname -> fname end
+
     mi
     |> files_index_from_tags()
-    |> Enum.reduce([], fn {_vol, files}, acc ->
-      acc ++ for {fp, _info} <- files, do: fp
+    |> Enum.reduce([], fn {vol, files}, acc ->
+      acc ++ for {fp, _info} <- files, do: joiner.(vol, fp)
     end)
   end
 
