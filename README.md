@@ -44,7 +44,7 @@ The result is a list of matched files with associated size and path.
   For help, getting superls commands ...  :
 
 ```bash
-superls help
+superls --help
 ```
 
 

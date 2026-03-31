@@ -30,7 +30,7 @@ defmodule Superls.CliTest do
   end
 
   test "superls help" do
-    argv = ~w(help)
+    argv = ~w(--help)
     {status, result} = with_io(fn -> Superls.CLI.main(argv) end)
     assert String.contains?(result, "Usage")
     assert status == :ok

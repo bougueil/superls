@@ -5,13 +5,16 @@ defmodule Superls.CLI do
   use Superls
 
   @options [
-    password: :boolean
+    password: :boolean,
+    help: :boolean
   ]
 
   def main(argv) do
     _ = Store.maybe_create_cache_path()
 
-    {opts, args, []} = OptionParser.parse(argv, aliases: [p: :password], strict: @options)
+    {opts, args, []} =
+      OptionParser.parse(argv, aliases: [p: :password, h: :help], strict: @options)
+
     main_args(args, opts)
   end
 
@@ -20,12 +23,11 @@ defmodule Superls.CLI do
          true <- index_path?(vol_path, File.dir?(vol_path)) do
       is_password? = Keyword.get(opts, :password, false)
       password = if(is_password?, do: Password.io_get(), else: "")
-
       Store.archive(vol_path, store_name, password)
     end
   end
 
-  defp main_args(["help"], _passwd) do
+  defp main_args([], help: true) do
     path = Store.cache_path()
 
     IO.puts("""
@@ -72,7 +74,7 @@ defmodule Superls.CLI do
         {:error, :store_missing}
     catch
       :enoent ->
-        IO.puts("** index `#{store_name}` not found\n\ntry: superls help")
+        IO.puts("** index `#{store_name}` not found\n\ntry: superls --help")
         {:error, :enoent}
 
       err ->
@@ -85,14 +87,14 @@ defmodule Superls.CLI do
   defp parse_index_args([vol_path]), do: {:ok, vol_path, default_store()}
 
   defp parse_index_args(_volume_path_notfound) do
-    IO.puts("** error: missing volume path\n\ntry: superls help")
+    IO.puts("** error: missing volume path\n\ntry: superls --help")
     {:error, :volume_path_notfound}
   end
 
   defp index_path?(_, true), do: true
 
   defp index_path?(vol_path, false) do
-    IO.puts("** error: `#{vol_path}` is an invalid directory\n\ntry: superls help")
+    IO.puts("** error: `#{vol_path}` is an invalid directory\n\ntry: superls --help")
     {:error, :invalid_directory}
   end
 
