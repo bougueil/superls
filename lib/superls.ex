@@ -38,7 +38,8 @@ defmodule Superls do
   @doc "interrupt flow with the stores_pathmessage `mg`"
   @spec halt(String.t()) :: no_return()
   def halt(msg) do
-    throw(msg)
+    IO.puts(msg)
+    exit(:normal)
   end
 
   @doc "Returns `encrypted` from `term` with `passwd`"

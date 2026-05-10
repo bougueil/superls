@@ -139,6 +139,11 @@ defmodule Superls.Store do
   defp do_maybe_create_dir(true, _store, store_path),
     do: store_path
 
+  defp do_maybe_create_dir(false, "" = _store, store_path) do
+    :ok = File.mkdir_p!(store_path)
+    store_path
+  end
+
   defp do_maybe_create_dir(false, store, store_path) do
     Prompt.valid_default_no?("Confirm create a new index `#{store}`") &&
       Superls.halt("User aborts.")

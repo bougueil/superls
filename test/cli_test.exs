@@ -52,19 +52,19 @@ defmodule Superls.CliTest do
     HelperTest.create_indexes(@volumes)
     argv = ~w(wrong_index)
     {{:error, :enoent}, result} = with_io(fn -> Superls.CLI.main(argv) end)
-    assert String.contains?(result, "`wrong_index` not found")
+    assert String.contains?(result, "** index `wrong_index` is missing.")
   end
 
   test "superls no args, no existing store" do
     argv = ~w()
     {{:error, :enoent}, result} = with_io(fn -> Superls.CLI.main(argv) end)
-    assert String.contains?(result, "`test_superls` not found")
+    assert String.contains?(result, "** index `` is missing.")
   end
 
   test "superls test_superls, no existing store" do
     argv = ~w(test_superls)
     {{:error, :enoent}, result} = with_io(fn -> Superls.CLI.main(argv) end)
-    assert String.contains?(result, "`test_superls` not found")
+    assert String.contains?(result, "** index `` is missing.")
   end
 
   test "superls create index, missing vol_path" do

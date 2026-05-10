@@ -56,25 +56,33 @@ defmodule Superls.CLI do
     try do
       mi = Store.get_merged_index_from_store(store_name, passwd)
       :ok = start_interactive([mi, opts])
-    rescue
-      _e in File.Error ->
-        default_store = default_store()
+      # rescue
+      #   _e in File.Error ->
+      #     default_store = default_store()
 
-        store =
-          case store_name do
-            ^default_store -> ""
-            any -> any
-          end
+      #     store =
+      #       case store_name do
+      #         ^default_store -> ""
+      #         any -> any
+      #       end
+
+      #     IO.puts("""
+      #     ** index `#{store_name}` is missing.
+      #     first create index with: superls index /path/to/my/volume_files -i #{store} [- p]
+      #     """)
+
+      #     {:error, :store_missing}
+    catch
+      :enoent ->
+        store_name = if store_name == default_store(), do: "", else: store_name
 
         IO.puts("""
         ** index `#{store_name}` is missing.
-        first create index with: superls index /path/to/my/volume_files -i #{store} [- p]
+        First create index with: superls index /path/to/my/volume_files #{store_name}
+
+        See also superls --help
         """)
 
-        {:error, :store_missing}
-    catch
-      :enoent ->
-        IO.puts("** index `#{store_name}` not found\n\ntry: superls --help")
         {:error, :enoent}
 
       err ->
