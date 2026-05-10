@@ -75,17 +75,18 @@ Tags present in `./priv/banned_tags` are not indexed.
 
 ## build
 `superls` is built with a static secret key that can be customized with the `SLS_SECRET` environment variable.
-The secret key combined with the `-p` password protect the index content.
+The secret key combined with the `-p` password encrypt the index content.
 ```
 mix setup
-asdf reshim elixir # if using asdf
+# asdf reshim elixir # if using asdf
 
-or with a custom secret key (passwords encrypted) :
+# alternatively build with a custom secret key (passwords encrypted) :
 SLS_SECRET="myBuiltSecret" mix setup
-asdf reshim elixir # if using asdf
+# asdf reshim elixir # if using asdf
 ```
 
 ## run
 ```
+# ensure PATH contains $HOME/.mix/escripts
 superls
 ```
