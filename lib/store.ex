@@ -155,21 +155,19 @@ defmodule Superls.Store do
   defp clean_old_digests(media_vol, store, passwd) do
     path_file = cache_store_path(store)
     indexes = list_indexes(store, passwd)
+    keep_suffix_fn = fn vol_path -> Path.split(vol_path) |> Enum.take(-2) end
+    media_vol_suffix = keep_suffix_fn.(media_vol)
 
-    # First ensure the cache contains no duplicated volumes.
-    # For instance, ubuntu 26.04 changed the mounted volume path, leaving duplicate indexes
+    # First ensure the cache doesn't contain duplicated volumes.
+    # For instance, ubuntu 26.04 changed the mounted volume path
     indexes
-    |> Enum.map(fn {_, vol} -> Path.split(vol) |> Enum.take(-2) end)
-    |> Enum.frequencies()
-    |> Enum.each(fn
-      {_, 1} ->
-        :ok
-
-      {vol, _} ->
+    |> Enum.each(fn {_, vol} ->
+      if media_vol_suffix == keep_suffix_fn.(vol) && media_vol != vol do
         Superls.Prompt.valid_default_no?(
-          "Duplicate volume: #{Enum.join(vol, " ")}, remove the deprecated one located in #{path_file}.\nContinue"
+          "** found a similar volume to #{media_vol} in #{path_file}:\n- #{vol} (may conflict, remove it)\nContinue"
         ) &&
           Superls.halt("User aborts.")
+      end
     end)
 
     # Remove the old index to be replaced.
